@@ -1,4 +1,4 @@
-package noname
+package lux
 
 type Light interface {
 	SetColor(float32, float32, float32)

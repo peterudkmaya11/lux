@@ -1,4 +1,4 @@
-package noname
+package lux
 
 import (
 	"testing"

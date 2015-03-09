@@ -1,4 +1,4 @@
-package noname
+package lux
 
 var Postprocessfragmentshader_normalvisual = `#version 330
 uniform sampler2D tex;

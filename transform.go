@@ -1,4 +1,4 @@
-package noname
+package lux
 
 import (
 	glm "github.com/go-gl/mathgl/mgl32"
