@@ -4,7 +4,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
-func RenderThing(cam *Camera, mesh Mesh, prog RenderProgram, t *Transform, diffuse Texture) {
+func RenderThing(cam *Camera, mesh Mesh, prog RenderProgram, t *Transform, diffuse Texture2D) {
 	prog.Prog.Use()
 
 	model := t.Mat4()

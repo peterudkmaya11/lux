@@ -3,7 +3,7 @@ package terrain
 import (
 	"errors"
 	glm "github.com/go-gl/mathgl/mgl32"
-	engine "github.com/hydroflame/noname"
+	lux "github.com/luxengine/lux"
 )
 
 /*
@@ -11,7 +11,7 @@ y*width+x
 */
 
 //will make a model 2 rows and 2 columns less big, we cannot accurately calculate normals for the outer vertices
-func NewTerrain(heightmap [][]float32, scale float32) (engine.Mesh, error) {
+func NewTerrain(heightmap [][]float32, scale float32) (lux.Mesh, error) {
 	width := len(heightmap) - 2
 	height := len(heightmap[0]) - 2
 	if width < 2 || height < 2 {
@@ -48,7 +48,7 @@ func NewTerrain(heightmap [][]float32, scale float32) (engine.Mesh, error) {
 		indices[x+1] = indices[x] + uint16(width-x%2)
 		indices[x+2] = indices[x+x%2] + 1
 	}
-	return engine.NewVUNModel(indices, vertices, uvs, normals), nil
+	return lux.NewVUNModel(indices, vertices, uvs, normals), nil
 }
 
 func NormalToPlane(v1, v2, v3 glm.Vec3) glm.Vec3 {

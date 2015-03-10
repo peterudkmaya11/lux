@@ -3,7 +3,7 @@ package debug
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
-	engine "github.com/hydroflame/noname"
+	lux "github.com/luxengine/lux"
 	"log"
 	"unsafe"
 )
@@ -20,7 +20,7 @@ func glDebugCallback(source uint32, gltype uint32, id uint32, severity uint32, l
 
 //Will print errors and warnings to stdout
 func EnableGLDebugLogging() {
-	if engine.Extensions["GL_ARB_debug_output"] {
+	if lux.Extensions["GL_ARB_debug_output"] {
 		log.Print("debugging enabled")
 		gl.Enable(gl.DEBUG_OUTPUT_SYNCHRONOUS_ARB)
 		gl.DebugMessageCallbackARB(gl.DebugProc(glDebugCallback), gl.Ptr(nil))

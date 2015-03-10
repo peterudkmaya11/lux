@@ -11,7 +11,7 @@ type GBuffer struct {
 	framebuffer                                  Framebuffer
 	program                                      Program
 	PUni, VUni, MUni, NUni, MVPUni, DiffuseUni   UniformLocation
-	DiffuseTex, NormalTex, PositionTex, DepthTex Texture
+	DiffuseTex, NormalTex, PositionTex, DepthTex Texture2D
 	AggregateFramebuffer                         AggregateFB
 	vp, view                                     glm.Mat4
 	width, height                                int32
@@ -25,7 +25,7 @@ type AggregateFB struct {
 	framebuffer                          Framebuffer
 	program                              Program
 	DiffUni, NormalUni, PosUni, DepthUni UniformLocation
-	Out                                  Texture
+	Out                                  Texture2D
 }
 
 func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
@@ -39,7 +39,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	//depthbuffer.Storage(gl.DEPTH24_STENCIL8, width, height)
 	//fb.RenderBuffer(DepthStencilAttachement, depthbuffer)
 
-	depthtex := GenTexture()
+	depthtex := GenTexture2D()
 	depthtex.Bind(gl.TEXTURE_2D)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
@@ -47,7 +47,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, width, height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, nil)
 
-	diffuseTex := GenTexture()
+	diffuseTex := GenTexture2D()
 	diffuseTex.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -55,7 +55,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.FLOAT, nil)
 
-	normalTex := GenTexture()
+	normalTex := GenTexture2D()
 	normalTex.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -63,7 +63,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
 
-	positionTex := GenTexture()
+	positionTex := GenTexture2D()
 	positionTex.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -132,7 +132,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb.framebuffer = GenFramebuffer()
 	aggfb.framebuffer.Bind()
 
-	aggfb.Out = GenTexture()
+	aggfb.Out = GenTexture2D()
 	aggfb.Out.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -171,7 +171,7 @@ func (this *GBuffer) Bind(cam *Camera) {
 }
 
 //testing in progress
-func (this *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture, t *Transform) {
+func (this *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
 
 	model := t.Mat4()
 	mvp := this.vp.Mul4(model)
@@ -190,7 +190,7 @@ func (this *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture, t *Transform) {
 	mesh.DrawCall()
 }
 
-func (this *GBuffer) Aggregate(plights []*PointLight, shadowmat glm.Mat4, tex Texture) {
+func (this *GBuffer) Aggregate(plights []*PointLight, shadowmat glm.Mat4, tex Texture2D) {
 	this.AggregateFramebuffer.framebuffer.Bind()
 
 	this.AggregateFramebuffer.program.Use()
@@ -313,11 +313,10 @@ void main(){
 		light+=max(0,dot(normal, point_light_pos[i]-world_position));
 	}
 	float luma = 0.3;
-	//luma = max(0.3,shadow);//ambient light
 	
 	luma = max(luma,light);
-	luma = clamp(luma,0,1);
 	luma = min(shadow,luma);
+	luma = clamp(luma,0.3,1);
 	outColor = texture(diffusetex, uv)*luma;
 
 }

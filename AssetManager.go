@@ -8,14 +8,14 @@ import (
 type AssetManager struct {
 	modelsDir, shadersDir, texturesDir string
 	Models                             map[string]Mesh
-	Textures                           map[string]Texture
+	Textures                           map[string]Texture2D
 	Programs                           map[string]Program
 }
 
 func NewAssetManager(root, models, shaders, textures string) (out AssetManager) {
 	out.modelsDir, out.shadersDir, out.texturesDir = root+models, root+shaders, root+textures
 	out.Models = make(map[string]Mesh)
-	out.Textures = make(map[string]Texture)
+	out.Textures = make(map[string]Texture2D)
 	out.Programs = make(map[string]Program)
 	return out
 }

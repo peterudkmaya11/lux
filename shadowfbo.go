@@ -8,7 +8,7 @@ import (
 
 type ShadowFBO struct {
 	framebuffer          Framebuffer
-	texture              Texture
+	texture              Texture2D
 	projection, view, vp glm.Mat4
 	program              Program
 	mvpUni               UniformLocation
@@ -23,7 +23,7 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	fbo.Bind()
 	defer fbo.Unbind()
 
-	shadowtex := GenTexture()
+	shadowtex := GenTexture2D()
 	this.texture = shadowtex
 	shadowtex.Bind(gl.TEXTURE_2D)
 	defer shadowtex.Unbind(gl.TEXTURE_2D)
@@ -93,7 +93,7 @@ func (this *ShadowFBO) Render(mesh Mesh, transform *Transform) {
 	mesh.DrawCall()
 }
 
-func (this *ShadowFBO) ShadowMap() Texture {
+func (this *ShadowFBO) ShadowMap() Texture2D {
 	return this.texture
 }
 

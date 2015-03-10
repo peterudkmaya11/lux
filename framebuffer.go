@@ -28,7 +28,7 @@ func (this Framebuffer) RenderBuffer(attachement FramebufferAttachement, renderb
 }
 
 //Must be called with a bound Framebuffer
-func (this Framebuffer) Texture(target FramebufferTarget, attachement FramebufferAttachement, texture Texture, level int32) {
+func (this Framebuffer) Texture(target FramebufferTarget, attachement FramebufferAttachement, texture Texture2D, level int32) {
 	gl.FramebufferTexture(uint32(target), uint32(attachement), uint32(texture), level)
 }
 

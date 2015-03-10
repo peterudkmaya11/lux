@@ -6,35 +6,36 @@ import (
 )
 
 type Texture uint32
+type Texture2D Texture
 
-func (this Texture) Bind(target uint32) {
+func (this Texture2D) Bind(target uint32) {
 	gl.BindTexture(target, uint32(this))
 }
 
-func (this Texture) Unbind(target uint32) {
+func (this Texture2D) Unbind(target uint32) {
 	gl.BindTexture(target, 0)
 }
 
-func (this Texture) Delete() {
+func (this Texture2D) Delete() {
 	gl.DeleteTextures(1, (*uint32)(&this))
 }
 
-func (this Texture) TexImage2D(level, internalformat, width, height, border int32, format, xtype uint32, pixels unsafe.Pointer) {
+func (this Texture2D) TexImage2D(level, internalformat, width, height, border int32, format, xtype uint32, pixels unsafe.Pointer) {
 	gl.TexImage2D(gl.TEXTURE_2D, level, internalformat, width, height, border, format, xtype, pixels)
 }
 
-func (this Texture) TexParameteri(target, pname uint32, param int32) {
+func (this Texture2D) TexParameteri(target, pname uint32, param int32) {
 	gl.TexParameteri(target, pname, param)
 }
 
-func GenTexture() Texture {
+func GenTexture2D() Texture2D {
 	var tex uint32
 	gl.GenTextures(1, &tex)
-	return Texture(tex)
+	return Texture2D(tex)
 }
 
-func GenRGBTexture(width, height int32) Texture {
-	tex := GenTexture()
+func GenRGBTexture2D(width, height int32) Texture2D {
+	tex := GenTexture2D()
 	tex.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -46,8 +47,8 @@ func GenRGBTexture(width, height int32) Texture {
 
 //utility
 
-func HeightTexture(width, height int32, data []float32) Texture {
-	tex := GenTexture()
+func HeightTexture(width, height int32, data []float32) Texture2D {
+	tex := GenTexture2D()
 	tex.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)

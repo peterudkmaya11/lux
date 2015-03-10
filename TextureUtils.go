@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func LoadPng(file string) (Texture, error) {
+func LoadPng(file string) (Texture2D, error) {
 	imgFile, err := os.Open(file)
 	if err != nil {
 		return 0, nil
@@ -36,5 +36,5 @@ func LoadPng(file string) (Texture, error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
 
-	return Texture(texture), nil
+	return Texture2D(texture), nil
 }

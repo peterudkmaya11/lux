@@ -34,13 +34,13 @@ func InitPostProcessSystem() {
 
 type PostProcessFramebufferer interface {
 	PreRender()
-	Render(Texture)
+	Render(Texture2D)
 	SetNext(PostProcessFramebufferer)
 }
 
 type PostProcessFramebuffer struct {
 	Fb           Framebuffer
-	Tex          Texture
+	Tex          Texture2D
 	Prog         Program
 	next         PostProcessFramebufferer
 	time, source UniformLocation
@@ -73,7 +73,7 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 	ppf.time = prog.GetUniformLocation("time")
 
 	ppf.Fb = GenFramebuffer()
-	ppf.Tex = GenRGBTexture(width, height)
+	ppf.Tex = GenRGBTexture2D(width, height)
 
 	ppf.Fb.Bind()
 	defer ppf.Fb.Unbind()
@@ -101,7 +101,7 @@ func (this *PostProcessFramebuffer) PostRender() {
 }
 
 //should be called a 'pass'?
-func (this *PostProcessFramebuffer) Render(t Texture) {
+func (this *PostProcessFramebuffer) Render(t Texture2D) {
 	this.Prog.Use()
 	this.time.Uniform1f(float32(glfw.GetTime()))
 
