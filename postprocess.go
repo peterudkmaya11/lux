@@ -106,7 +106,7 @@ func (this *PostProcessFramebuffer) Render(t Texture2D) {
 	this.time.Uniform1f(float32(glfw.GetTime()))
 
 	gl.ActiveTexture(TextureUnitDiffuse)
-	t.Bind(gl.TEXTURE_2D)
+	t.Bind()
 	this.source.Uniform1i(TextureUniformDiffuse)
 	Fstri()
 	if this.next != nil {

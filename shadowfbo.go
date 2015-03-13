@@ -25,8 +25,8 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 
 	shadowtex := GenTexture2D()
 	this.texture = shadowtex
-	shadowtex.Bind(gl.TEXTURE_2D)
-	defer shadowtex.Unbind(gl.TEXTURE_2D)
+	shadowtex.Bind()
+	defer shadowtex.Unbind()
 	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)

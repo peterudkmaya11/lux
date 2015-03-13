@@ -19,7 +19,7 @@ func RenderThing(cam *Camera, mesh Mesh, prog RenderProgram, t *Transform, diffu
 	prog.Eye.Uniform3fv(1, &cam.Pos[0])
 
 	gl.ActiveTexture(TextureUnitDiffuse)
-	diffuse.Bind(gl.TEXTURE_2D)
+	diffuse.Bind()
 	prog.Diffuse.Uniform1i(TextureUniformDiffuse)
 
 	mesh.Bind()

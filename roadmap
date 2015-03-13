@@ -1,6 +1,11 @@
 Roadmap
 ===
 #Lighting
+##Light type
+###Directional (Sun)
+###Spot Lights
+###Point Lights
 ##Shadows
-##HDR
+##Environment mapping
+###HDR
 #Animation

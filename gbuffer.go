@@ -5,8 +5,6 @@ import (
 	glm "github.com/go-gl/mathgl/mgl32"
 )
 
-var _ = gl.ACTIVE_ATOMIC_COUNTER_BUFFERS
-
 type GBuffer struct {
 	framebuffer                                  Framebuffer
 	program                                      Program
@@ -34,13 +32,9 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	fb.Bind()
 	defer fb.Unbind()
 	gbuffer.framebuffer = fb
-	//depthbuffer := GenRenderBuffer()
-	//depthbuffer.Bind()
-	//depthbuffer.Storage(gl.DEPTH24_STENCIL8, width, height)
-	//fb.RenderBuffer(DepthStencilAttachement, depthbuffer)
 
 	depthtex := GenTexture2D()
-	depthtex.Bind(gl.TEXTURE_2D)
+	depthtex.Bind()
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -48,7 +42,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, width, height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, nil)
 
 	diffuseTex := GenTexture2D()
-	diffuseTex.Bind(gl.TEXTURE_2D)
+	diffuseTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -56,7 +50,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.FLOAT, nil)
 
 	normalTex := GenTexture2D()
-	normalTex.Bind(gl.TEXTURE_2D)
+	normalTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -64,7 +58,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
 
 	positionTex := GenTexture2D()
-	positionTex.Bind(gl.TEXTURE_2D)
+	positionTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -133,7 +127,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb.framebuffer.Bind()
 
 	aggfb.Out = GenTexture2D()
-	aggfb.Out.Bind(gl.TEXTURE_2D)
+	aggfb.Out.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -183,7 +177,7 @@ func (this *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform)
 	this.NUni.UniformMatrix4fv(1, true, &normal[0])
 
 	gl.ActiveTexture(TextureUnitDiffuse)
-	tex.Bind(gl.TEXTURE_2D)
+	tex.Bind()
 	this.DiffuseUni.Uniform1i(TextureUniformDiffuse)
 
 	mesh.Bind()
@@ -196,19 +190,19 @@ func (this *GBuffer) Aggregate(plights []*PointLight, shadowmat glm.Mat4, tex Te
 	this.AggregateFramebuffer.program.Use()
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	this.DiffuseTex.Bind(gl.TEXTURE_2D)
+	this.DiffuseTex.Bind()
 	this.AggregateFramebuffer.DiffUni.Uniform1i(0)
 
 	gl.ActiveTexture(gl.TEXTURE1)
-	this.NormalTex.Bind(gl.TEXTURE_2D)
+	this.NormalTex.Bind()
 	this.AggregateFramebuffer.NormalUni.Uniform1i(1)
 
 	gl.ActiveTexture(gl.TEXTURE2)
-	this.PositionTex.Bind(gl.TEXTURE_2D)
+	this.PositionTex.Bind()
 	this.AggregateFramebuffer.PosUni.Uniform1i(2)
 
 	gl.ActiveTexture(gl.TEXTURE3)
-	this.DepthTex.Bind(gl.TEXTURE_2D)
+	this.DepthTex.Bind()
 	this.AggregateFramebuffer.DepthUni.Uniform1i(3)
 
 	//point lights
@@ -229,7 +223,7 @@ func (this *GBuffer) Aggregate(plights []*PointLight, shadowmat glm.Mat4, tex Te
 
 	//=====shadow=====//
 	gl.ActiveTexture(gl.TEXTURE4)
-	tex.Bind(gl.TEXTURE_2D)
+	tex.Bind()
 	this.ShadowMapUni.Uniform1i(4)
 
 	this.ShadowMatUni.UniformMatrix4fv(1, false, &shadowmat[0])

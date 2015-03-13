@@ -5,15 +5,26 @@ import (
 	"unsafe"
 )
 
+//texture interface maybe ?
+/*
+type Texture interface{
+	Bind()
+	Unbind()
+	Delete()
+	//think about parameters
+	//Parameteri()
+}
+*/
+
 type Texture uint32
 type Texture2D Texture
 
-func (this Texture2D) Bind(target uint32) {
-	gl.BindTexture(target, uint32(this))
+func (this Texture2D) Bind() {
+	gl.BindTexture(gl.TEXTURE_2D, uint32(this))
 }
 
-func (this Texture2D) Unbind(target uint32) {
-	gl.BindTexture(target, 0)
+func (this Texture2D) Unbind() {
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 }
 
 func (this Texture2D) Delete() {
@@ -36,24 +47,11 @@ func GenTexture2D() Texture2D {
 
 func GenRGBTexture2D(width, height int32) Texture2D {
 	tex := GenTexture2D()
-	tex.Bind(gl.TEXTURE_2D)
+	tex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, nil)
-	return tex
-}
-
-//utility
-
-func HeightTexture(width, height int32, data []float32) Texture2D {
-	tex := GenTexture2D()
-	tex.Bind(gl.TEXTURE_2D)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, gl.Ptr(data))
 	return tex
 }
