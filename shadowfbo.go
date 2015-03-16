@@ -16,23 +16,23 @@ type ShadowFBO struct {
 }
 
 func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
-	this := ShadowFBO{}
+	sfbo := ShadowFBO{}
 	fbo := GenFramebuffer()
-	this.width, this.height = width, height
-	this.framebuffer = fbo
+	sfbo.width, sfbo.height = width, height
+	sfbo.framebuffer = fbo
 	fbo.Bind()
 	defer fbo.Unbind()
 
 	shadowtex := GenTexture2D()
-	this.texture = shadowtex
+	sfbo.texture = shadowtex
 	shadowtex.Bind()
 	defer shadowtex.Unbind()
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
-	shadowtex.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
+	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL)
 	shadowtex.TexImage2D(0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, nil)
 
 	fbo.Texture(ReadDrawFramebuffer, DepthAttachement, shadowtex, 0 /*level*/)
@@ -41,70 +41,70 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	fbo.ReadBuffer(None)
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
-		return &this, errors.New("framebuffer incomplete")
+		return &sfbo, errors.New("framebuffer incomplete")
 	}
 
 	vs, err := CompileShader(_shadow_fbo_vertex_shader, VertexShader)
 	if err != nil {
-		return &this, err
+		return &sfbo, err
 	}
 	defer vs.Delete()
 	fs, err := CompileShader(_shadow_fbo_fragment_shader, FragmentShader)
 	if err != nil {
-		return &this, err
+		return &sfbo, err
 	}
 	defer fs.Delete()
 	prog, err := NewProgram(vs, fs)
 	if err != nil {
-		return &this, err
+		return &sfbo, err
 	}
-	this.program = prog
+	sfbo.program = prog
 	prog.Use()
-	this.mvpUni = prog.GetUniformLocation("mvp")
+	sfbo.mvpUni = prog.GetUniformLocation("mvp")
 
-	return &this, nil
+	return &sfbo, nil
 }
 
-func (this *ShadowFBO) SetOrtho(left, right, bottom, top, near, far float32) {
-	this.projection = glm.Ortho(left, right, bottom, top, near, far)
+func (sfbo *ShadowFBO) SetOrtho(left, right, bottom, top, near, far float32) {
+	sfbo.projection = glm.Ortho(left, right, bottom, top, near, far)
 }
 
-func (this *ShadowFBO) LookAt(ex, ey, ez, tx, ty, tz float32) {
-	this.view = glm.LookAt(ex, ey, ez, tx, ty, tz, 0, 1, 0)
+func (sfbo *ShadowFBO) LookAt(ex, ey, ez, tx, ty, tz float32) {
+	sfbo.view = glm.LookAt(ex, ey, ez, tx, ty, tz, 0, 1, 0)
 }
 
-func (this *ShadowFBO) BindForDrawing() {
-	this.framebuffer.Bind()
-	this.program.Use()
-	this.vp = this.projection.Mul4(this.view)
+func (sfbo *ShadowFBO) BindForDrawing() {
+	sfbo.framebuffer.Bind()
+	sfbo.program.Use()
+	sfbo.vp = sfbo.projection.Mul4(sfbo.view)
 	gl.Clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-	ViewPortChange(this.width, this.height)
+	ViewPortChange(sfbo.width, sfbo.height)
 	gl.CullFace(gl.FRONT)
 }
 
-func (this *ShadowFBO) Unbind() {
+func (sfbo *ShadowFBO) Unbind() {
 	gl.CullFace(gl.BACK)
 }
 
-func (this *ShadowFBO) Render(mesh Mesh, transform *Transform) {
-	mvpmat := this.vp.Mul4(transform.Mat4())
-	this.mvpUni.UniformMatrix4fv(1, false, &mvpmat[0])
+func (sfbo *ShadowFBO) Render(mesh Mesh, transform *Transform) {
+	mvpmat := sfbo.vp.Mul4(transform.Mat4())
+	sfbo.mvpUni.UniformMatrix4fv(1, false, &mvpmat[0])
 	mesh.Bind()
 	mesh.DrawCall()
 }
 
-func (this *ShadowFBO) ShadowMap() Texture2D {
-	return this.texture
+func (sfbo *ShadowFBO) ShadowMap() Texture2D {
+	return sfbo.texture
 }
 
-func (this *ShadowFBO) ShadowMat() glm.Mat4 {
-	return depthscaling.Mul4(this.vp)
+func (sfbo *ShadowFBO) ShadowMat() glm.Mat4 {
+	return depthscaling.Mul4(sfbo.vp)
 }
 
-func (this *ShadowFBO) Delete() {
-	this.texture.Delete()
-	this.framebuffer.Delete()
-	this.program.Delete()
+func (sfbo *ShadowFBO) Delete() {
+	sfbo.texture.Delete()
+	sfbo.framebuffer.Delete()
+	sfbo.program.Delete()
 }
 
 var _shadow_fbo_vertex_shader = `

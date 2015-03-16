@@ -87,42 +87,42 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 	return &ppf, nil
 }
 
-func (this *PostProcessFramebuffer) PreRender() {
-	if this.next != nil {
-		this.Fb.Bind()
+func (ppfb *PostProcessFramebuffer) PreRender() {
+	if ppfb.next != nil {
+		ppfb.Fb.Bind()
 	} else {
 		gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 	}
 	gl.Disable(gl.DEPTH_TEST)
 }
 
-func (this *PostProcessFramebuffer) PostRender() {
+func (ppfb *PostProcessFramebuffer) PostRender() {
 	gl.Enable(gl.DEPTH_TEST)
 }
 
 //should be called a 'pass'?
-func (this *PostProcessFramebuffer) Render(t Texture2D) {
-	this.Prog.Use()
-	this.time.Uniform1f(float32(glfw.GetTime()))
+func (ppfb *PostProcessFramebuffer) Render(t Texture2D) {
+	ppfb.Prog.Use()
+	ppfb.time.Uniform1f(float32(glfw.GetTime()))
 
 	gl.ActiveTexture(TextureUnitDiffuse)
 	t.Bind()
-	this.source.Uniform1i(TextureUniformDiffuse)
+	ppfb.source.Uniform1i(TextureUniformDiffuse)
 	Fstri()
-	if this.next != nil {
-		this.next.PreRender()
-		this.next.Render(this.Tex)
+	if ppfb.next != nil {
+		ppfb.next.PreRender()
+		ppfb.next.Render(ppfb.Tex)
 	}
 }
 
-func (this *PostProcessFramebuffer) SetNext(n PostProcessFramebufferer) {
-	this.next = n
+func (ppfb *PostProcessFramebuffer) SetNext(n PostProcessFramebufferer) {
+	ppfb.next = n
 }
 
-func (this *PostProcessFramebuffer) Delete() {
-	this.Prog.Delete()
-	this.Tex.Delete()
-	this.Fb.Delete()
+func (ppfb *PostProcessFramebuffer) Delete() {
+	ppfb.Prog.Delete()
+	ppfb.Tex.Delete()
+	ppfb.Fb.Delete()
 }
 
 func Fstri() {

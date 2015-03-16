@@ -61,40 +61,40 @@ func NewVUNModel(indices []uint16, indexedVertices []glm.Vec3, indexedUvs []glm.
 	return &m
 }
 
-func (this *VUNMesh) Bind() {
-	this.VAO.Bind()
+func (m *VUNMesh) Bind() {
+	m.VAO.Bind()
 
 	gl.EnableVertexAttribArray(0)
-	this.Positions.Bind(gl.ARRAY_BUFFER)
+	m.Positions.Bind(gl.ARRAY_BUFFER)
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
 
 	gl.EnableVertexAttribArray(1)
-	this.Uvs.Bind(gl.ARRAY_BUFFER)
+	m.Uvs.Bind(gl.ARRAY_BUFFER)
 	gl.VertexAttribPointer(1, 2, gl.FLOAT, false, 0, nil)
 
 	gl.EnableVertexAttribArray(2)
-	this.Normals.Bind(gl.ARRAY_BUFFER)
+	m.Normals.Bind(gl.ARRAY_BUFFER)
 	gl.VertexAttribPointer(2, 3, gl.FLOAT, false, 0, nil)
 
-	this.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	m.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 }
 
-func (this *VUNMesh) Unbind() {
-	this.VAO.Unbind()
+func (m *VUNMesh) Unbind() {
+	m.VAO.Unbind()
 }
 
-func (this VUNMesh) Delete() {
-	defer this.Positions.Delete()
-	defer this.Uvs.Delete()
-	defer this.Normals.Delete()
-	defer this.Indices.Delete()
-	defer this.VAO.Delete()
+func (m VUNMesh) Delete() {
+	defer m.Positions.Delete()
+	defer m.Uvs.Delete()
+	defer m.Normals.Delete()
+	defer m.Indices.Delete()
+	defer m.VAO.Delete()
 }
 
-func (this *VUNMesh) Size() int {
-	return this.Msize
+func (m *VUNMesh) Size() int {
+	return m.Msize
 }
 
-func (this *VUNMesh) DrawCall() {
-	gl.DrawElements(gl.TRIANGLES, int32(this.Size()), gl.UNSIGNED_SHORT, nil)
+func (m *VUNMesh) DrawCall() {
+	gl.DrawElements(gl.TRIANGLES, int32(m.Size()), gl.UNSIGNED_SHORT, nil)
 }

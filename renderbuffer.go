@@ -14,21 +14,21 @@ func GenRenderBuffer() RenderBuffer {
 }
 
 //Alias for glBindRenderbuffer(gl.RENDERBUFFER, uint32(this))
-func (this RenderBuffer) Bind() {
-	gl.BindRenderbuffer(gl.RENDERBUFFER, uint32(this))
+func (rb RenderBuffer) Bind() {
+	gl.BindRenderbuffer(gl.RENDERBUFFER, uint32(rb))
 }
 
 //Alias for glBindRenderbuffer(gl.RENDERBUFFER, 0)
-func (this RenderBuffer) Unbind() {
+func (rb RenderBuffer) Unbind() {
 	gl.BindRenderbuffer(gl.RENDERBUFFER, 0)
 }
 
-//Alias for glDeleteRenderbuffers(1, (*uint32)(&this))
-func (this RenderBuffer) Delete() {
-	gl.DeleteRenderbuffers(1, (*uint32)(&this))
+//Alias for glDeleteRenderbuffers(1, (*uint32)(&rb))
+func (rb RenderBuffer) Delete() {
+	gl.DeleteRenderbuffers(1, (*uint32)(&rb))
 }
 
-func (this RenderBuffer) Storage(internalformat uint32, width, height int32) {
+func (rb RenderBuffer) Storage(internalformat uint32, width, height int32) {
 	//RENDERBUFFER is the only possible value
 	gl.RenderbufferStorage(gl.RENDERBUFFER, internalformat, width, height)
 }

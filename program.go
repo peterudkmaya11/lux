@@ -7,25 +7,25 @@ import (
 type Program uint32
 
 //Deletes the program from OpenGL memory. Becomes unusable after this is invoked
-func (this Program) Delete() {
-	gl.DeleteProgram(uint32(this))
+func (p Program) Delete() {
+	gl.DeleteProgram(uint32(p))
 }
 
-//Use this program
-func (this Program) Use() {
-	gl.UseProgram(uint32(this))
+//Use p program
+func (p Program) Use() {
+	gl.UseProgram(uint32(p))
 }
 
 //alias for UseProgram(0)
-func (this Program) Unuse() {
+func (p Program) Unuse() {
 	gl.UseProgram(0)
 }
 
 //return the uniform location of 'name'
-func (this Program) GetUniformLocation(name string) UniformLocation {
-	return UniformLocation(gl.GetUniformLocation(uint32(this), gl.Str(name+"\x00")))
+func (p Program) GetUniformLocation(name string) UniformLocation {
+	return UniformLocation(gl.GetUniformLocation(uint32(p), gl.Str(name+"\x00")))
 }
 
-func (this Program) BindFragDataLocation(color uint32, name string) {
-	gl.BindFragDataLocation(uint32(this), color, gl.Str(name+"\x00"))
+func (p Program) BindFragDataLocation(color uint32, name string) {
+	gl.BindFragDataLocation(uint32(p), color, gl.Str(name+"\x00"))
 }

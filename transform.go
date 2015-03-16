@@ -14,35 +14,35 @@ func NewTransform() *Transform {
 	return &out
 }
 
-func (this *Transform) Translate(x, y, z float32) {
-	this.LocalToWorld = this.LocalToWorld.Mul4(glm.Translate3D(x, y, z))
+func (t *Transform) Translate(x, y, z float32) {
+	t.LocalToWorld = t.LocalToWorld.Mul4(glm.Translate3D(x, y, z))
 }
 
-func (this *Transform) SetTranslate(x, y, z float32) {
-	this.LocalToWorld = glm.Translate3D(x, y, z)
+func (t *Transform) SetTranslate(x, y, z float32) {
+	t.LocalToWorld = glm.Translate3D(x, y, z)
 }
 
-func (this *Transform) QuatRotate(angle float32, axis glm.Vec3) {
-	this.LocalToWorld = this.LocalToWorld.Mul4(glm.HomogRotate3D(angle, axis))
+func (t *Transform) QuatRotate(angle float32, axis glm.Vec3) {
+	t.LocalToWorld = t.LocalToWorld.Mul4(glm.HomogRotate3D(angle, axis))
 }
 
-func (this *Transform) SetQuatRotate(angle float32, axis glm.Vec3) {
-	this.LocalToWorld = glm.HomogRotate3D(angle, axis)
+func (t *Transform) SetQuatRotate(angle float32, axis glm.Vec3) {
+	t.LocalToWorld = glm.HomogRotate3D(angle, axis)
 }
 
 //only uniform scaling to prevent 'not having an inverse' and eventually accellerate matrix inversion
-func (this *Transform) Scale(amount float32) {
-	this.LocalToWorld = this.LocalToWorld.Mul4(glm.Scale3D(amount, amount, amount))
+func (t *Transform) Scale(amount float32) {
+	t.LocalToWorld = t.LocalToWorld.Mul4(glm.Scale3D(amount, amount, amount))
 }
 
-func (this *Transform) SetScale(amount float32) {
-	this.LocalToWorld = glm.Scale3D(amount, amount, amount)
+func (t *Transform) SetScale(amount float32) {
+	t.LocalToWorld = glm.Scale3D(amount, amount, amount)
 }
 
-func (this *Transform) Iden() {
-	this.LocalToWorld = glm.Ident4()
+func (t *Transform) Iden() {
+	t.LocalToWorld = glm.Ident4()
 }
 
-func (this *Transform) Mat4() glm.Mat4 {
-	return this.LocalToWorld
+func (t *Transform) Mat4() glm.Mat4 {
+	return t.LocalToWorld
 }

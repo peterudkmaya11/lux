@@ -11,8 +11,8 @@ type Shader struct {
 	Loc   uint32
 }
 
-func (this Shader) Delete() {
-	gl.DeleteShader(this.Loc)
+func (s Shader) Delete() {
+	gl.DeleteShader(s.Loc)
 }
 
 func CompileShader(source string, shaderType ShaderType) (Shader, error) {

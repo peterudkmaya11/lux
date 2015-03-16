@@ -20,45 +20,45 @@ func NewAssetManager(root, models, shaders, textures string) (out AssetManager) 
 	return out
 }
 
-func (this *AssetManager) LoadModel(name, iname string) {
+func (am *AssetManager) LoadModel(name, iname string) {
 	if strings.Contains(name, ".obj") {
-		this.Models[iname] = NewWavefrontModelFromFile(this.modelsDir + name)
+		am.Models[iname] = NewWavefrontModelFromFile(am.modelsDir + name)
 	} else {
 		log.Fatal("cannot find " + name)
 	}
 }
 
-func (this *AssetManager) LoadRenderProgram(vertexShader, fragmentShader, iname string) {
-	//program, err := LoadProgram(this.shadersDir+"standard.vert", this.shadersDir+"standard.frag")
+func (am *AssetManager) LoadRenderProgram(vertexShader, fragmentShader, iname string) {
+	//program, err := LoadProgram(am.shadersDir+"standard.vert", am.shadersDir+"standard.frag")
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//this.Programs[iname] = program
+	//am.Programs[iname] = program
 }
 
-func (this *AssetManager) LoadTexture(name, iname string) {
+func (am *AssetManager) LoadTexture(name, iname string) {
 	if strings.Contains(name, ".png") {
-		pic, err := LoadPng(this.texturesDir + name)
+		pic, err := LoadPng(am.texturesDir + name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		this.Textures[iname] = pic
+		am.Textures[iname] = pic
 	} else {
-		log.Fatal("unable to find texture " + (this.modelsDir + name))
+		log.Fatal("unable to find texture " + (am.modelsDir + name))
 	}
 }
 
-func (this *AssetManager) Clean() {
-	for name, model := range this.Models {
+func (am *AssetManager) Clean() {
+	for name, model := range am.Models {
 		model.Delete()
-		delete(this.Models, name)
+		delete(am.Models, name)
 	}
-	for name, tex := range this.Textures {
+	for name, tex := range am.Textures {
 		tex.Delete()
-		delete(this.Textures, name)
+		delete(am.Textures, name)
 	}
-	for name, prog := range this.Programs {
+	for name, prog := range am.Programs {
 		prog.Delete()
-		delete(this.Programs, name)
+		delete(am.Programs, name)
 	}
 }

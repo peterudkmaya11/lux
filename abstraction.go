@@ -16,16 +16,16 @@ func GenVertexArray() VertexArray {
 	return VertexArray(va)
 }
 
-func (this VertexArray) Bind() {
-	gl.BindVertexArray(uint32(this))
+func (va VertexArray) Bind() {
+	gl.BindVertexArray(uint32(va))
 }
 
-func (this VertexArray) Unbind() {
+func (va VertexArray) Unbind() {
 	gl.BindVertexArray(0)
 }
 
-func (this VertexArray) Delete() {
-	gl.DeleteVertexArrays(1, (*uint32)(&this))
+func (va VertexArray) Delete() {
+	gl.DeleteVertexArrays(1, (*uint32)(&va))
 }
 
 type Buffer uint32
@@ -36,45 +36,52 @@ func GenBuffer() Buffer {
 	return Buffer(va)
 }
 
-func (this Buffer) Bind(target uint32) {
-	gl.BindBuffer(target, uint32(this))
+func (b Buffer) Bind(target uint32) {
+	gl.BindBuffer(target, uint32(b))
 }
 
-func (this Buffer) Unbind(target uint32) {
+func (b Buffer) Unbind(target uint32) {
 	gl.BindBuffer(target, 0)
 }
 
-func (this Buffer) Delete() {
-	gl.DeleteBuffers(1, (*uint32)(&this))
+func (b Buffer) Delete() {
+	gl.DeleteBuffers(1, (*uint32)(&b))
 }
 
 //UNIFORMS
 
 type UniformLocation int32
 
-func (this UniformLocation) UniformMatrix4fv(count int32, transpose bool, values *float32) {
-	gl.UniformMatrix4fv(int32(this), count, transpose, values)
+func (ul UniformLocation) UniformMatrix4fv(count int32, transpose bool, values *float32) {
+	gl.UniformMatrix4fv(int32(ul), count, transpose, values)
 }
 
-func (this UniformLocation) Uniform1i(v0 int32) {
-	gl.Uniform1i(int32(this), v0)
+func (ul UniformLocation) Uniform1i(v0 int32) {
+	gl.Uniform1i(int32(ul), v0)
 }
 
-func (this UniformLocation) Uniform3fv(count int32, values *float32) {
-	gl.Uniform3fv(int32(this), count, values)
+func (ul UniformLocation) Uniform3fv(count int32, values *float32) {
+	gl.Uniform3fv(int32(ul), count, values)
 }
 
-func (this UniformLocation) Uniform2f(v0, v1 float32) {
-	gl.Uniform2f(int32(this), v0, v1)
+func (ul UniformLocation) Uniform2f(v0, v1 float32) {
+	gl.Uniform2f(int32(ul), v0, v1)
 }
 
-func (this UniformLocation) Uniform1f(v0 float32) {
-	gl.Uniform1f(int32(this), v0)
+func (ul UniformLocation) Uniform1f(v0 float32) {
+	gl.Uniform1f(int32(ul), v0)
 }
-func (this UniformLocation) Uniform2i(v0, v1 int32) {
-	gl.Uniform2i(int32(this), v0, v1)
+func (ul UniformLocation) Uniform2i(v0, v1 int32) {
+	gl.Uniform2i(int32(ul), v0, v1)
 }
 
-func (this UniformLocation) Uniform2fv(v *[2]float32) {
-	gl.Uniform2fv(int32(this), 1, &v[0])
+func (ul UniformLocation) Uniform2fv(v *[2]float32) {
+	gl.Uniform2fv(int32(ul), 1, &v[0])
+}
+
+//Utility
+func GetCurrentTexture2D() Texture2D {
+	var i int32
+	gl.GetIntegerv(gl.TEXTURE_BINDING_2D, &i)
+	return Texture2D(i)
 }
