@@ -19,6 +19,8 @@ type GBuffer struct {
 	NumPointLightUni, PointLightPosUni, PointLightColUni UniformLocation
 	//View uniforms
 	CamPosUni UniformLocation
+	//cook torrance
+	Cook_roughnessValue, Cook_F0, Cook_k UniformLocation
 }
 
 type AggregateFB struct {
@@ -148,6 +150,11 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.PointLightColUni = aprog.GetUniformLocation("point_light_color")
 	gbuffer.CamPosUni = aprog.GetUniformLocation("cam_pos")
 
+	//test data for cook torrance shader
+	gbuffer.Cook_roughnessValue = aprog.GetUniformLocation("roughnessValue")
+	gbuffer.Cook_F0 = aprog.GetUniformLocation("F0")
+	gbuffer.Cook_k = aprog.GetUniformLocation("k")
+
 	aggfb.framebuffer.DrawBuffers(ColorAttachement0)
 	aggfb.framebuffer.Texture(ReadDrawFramebuffer, ColorAttachement0, aggfb.Out, 0)
 
@@ -187,10 +194,14 @@ func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
 	mesh.DrawCall()
 }
 
-func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex Texture2D) {
+func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex Texture2D, f1, f2, f3 float32) {
 	gb.AggregateFramebuffer.framebuffer.Bind()
 
 	gb.AggregateFramebuffer.program.Use()
+
+	gb.Cook_roughnessValue.Uniform1f(f1)
+	gb.Cook_F0.Uniform1f(f2)
+	gb.Cook_k.Uniform1f(f3)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gb.DiffuseTex.Bind()
@@ -287,6 +298,11 @@ uniform sampler2D normaltex;
 uniform sampler2D postex;
 uniform sampler2D depthtex;
 
+//cook
+uniform float roughnessValue;
+uniform float F0;
+uniform float k;
+
 //Lights
 uniform int NUM_POINT_LIGHT;
 uniform vec3 point_light_pos[MAX_POINT_LIGHT];
@@ -326,9 +342,9 @@ void main(){
 	//////cook torrance
 
 	//material values
-	float roughnessValue = 0.1;
-	float F0 = 0.8; //fresnel reflectance at normal incidence
-	float k = 0.2; //fraction of diffuse reflection (specular reflection = 1 - k)
+	//float roughnessValue = 0.1;
+	//float F0 = 0.8; //fresnel reflectance at normal incidence
+	//float k = 0.2; //fraction of diffuse reflection (specular reflection = 1 - k)
 	vec3 lightColor = vec3(0.9,0.1,0.1);
 
 	vec3 world_pos = texture(postex, uv).xyz;
@@ -356,7 +372,6 @@ void main(){
 
 	float cook =NdL * (k + specular * (1.0 - k));
 	outColor = texture(diffusetex, uv)*cook;
-
 }
 ` + "\x00"
 
