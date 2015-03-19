@@ -3,7 +3,7 @@ package lux
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
-	"github.com/luxengine/lux/utils"
+	"luxengine.net/lux/utils"
 )
 
 type Mesh interface {
