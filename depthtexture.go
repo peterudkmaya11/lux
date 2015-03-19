@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
+//GenDepthTexture is a utility function to generate a depth Texture2D
 func GenDepthTexture(width, height int32) Texture2D {
 	tex := GenTexture2D()
 	tex.Bind()

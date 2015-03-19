@@ -6,19 +6,22 @@ import (
 	"luxengine.net/lux/utils"
 )
 
+//Mesh is an interface to represent any renderable mesh
 type Mesh interface {
 	Bind()
 	Delete()
-	Size() int
+	Size() int32
 	DrawCall()
 }
 
+//VUNMesh is a Vertex-Uv-Normal mesh
 type VUNMesh struct { //Vertex, Uv, Normal Model
 	VAO                              VertexArray
 	Indices, Positions, Uvs, Normals Buffer
-	Msize                            int
+	Msize                            int32
 }
 
+//NewWavefrontModelFromFile loads a wavefront from the given file. Can only load files that are triangulated and with UV. Does not do anythign with material property.
 func NewWavefrontModelFromFile(file string) Mesh {
 	//load object
 	meshObj := utils.LoadObject(file, false)
@@ -28,6 +31,7 @@ func NewWavefrontModelFromFile(file string) Mesh {
 	return NewVUNModel(indices, indexedVertices, indexedUvs, indexedNormals)
 }
 
+//NewVUNModel process and uploads the data to the GPU.
 func NewVUNModel(indices []uint16, indexedVertices []glm.Vec3, indexedUvs []glm.Vec2, indexedNormals []glm.Vec3) Mesh {
 
 	m := VUNMesh{}
@@ -35,7 +39,7 @@ func NewVUNModel(indices []uint16, indexedVertices []glm.Vec3, indexedUvs []glm.
 	m.VAO.Bind()
 	defer m.VAO.Unbind()
 
-	m.Msize = len(indices)
+	m.Msize = int32(len(indices))
 	//create a bunch of buffers and fill them
 	//Positions
 	m.Positions = GenBuffer()
@@ -61,6 +65,7 @@ func NewVUNModel(indices []uint16, indexedVertices []glm.Vec3, indexedUvs []glm.
 	return &m
 }
 
+//Bind the vertex array and all vertex attrib required to render this mesh.
 func (m *VUNMesh) Bind() {
 	m.VAO.Bind()
 
@@ -79,10 +84,12 @@ func (m *VUNMesh) Bind() {
 	m.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 }
 
+//Unbind all the resources.
 func (m *VUNMesh) Unbind() {
 	m.VAO.Unbind()
 }
 
+//Delete all allocated resources (buffers, vertexarray,etc).
 func (m VUNMesh) Delete() {
 	defer m.Positions.Delete()
 	defer m.Uvs.Delete()
@@ -91,10 +98,12 @@ func (m VUNMesh) Delete() {
 	defer m.VAO.Delete()
 }
 
-func (m *VUNMesh) Size() int {
+//Size returns the amount of verteices to be drawn.
+func (m *VUNMesh) Size() int32 {
 	return m.Msize
 }
 
+//DrawCall send a single draw call
 func (m *VUNMesh) DrawCall() {
-	gl.DrawElements(gl.TRIANGLES, int32(m.Size()), gl.UNSIGNED_SHORT, nil)
+	gl.DrawElements(gl.TRIANGLES, m.Size(), gl.UNSIGNED_SHORT, nil)
 }

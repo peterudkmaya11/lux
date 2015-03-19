@@ -1,6 +1,7 @@
 package lux
 
-var Postprocessfragmentshader_normalvisual = `#version 330
+//Sample post process shader to visualise normals
+var PostprocessfragmentshaderNormalvisual = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;
@@ -11,7 +12,8 @@ void main(){
 }
 ` + "\x00"
 
-var Postprocessfragmentshader_nothing = `#version 330
+//Sample post process shader to just blit the texture (could use texture blit as well)
+var PostprocessfragmentshaderNothing = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;
@@ -23,7 +25,8 @@ void main(){
 }
 ` + "\x00"
 
-var Postprocessfragmentshader_viewdepth = `#version 330
+//Sample post process shader to visualise depth (works differently on my mac and linux, weird)
+var PostprocessfragmentshaderViewdepth = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;
@@ -42,7 +45,8 @@ void main(){
 }
 ` + "\x00"
 
-var Postprocessfragmentshader_inverse = `#version 330
+//Sample post process shader to inverse colors
+var PostprocessfragmentshaderInverse = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;
@@ -53,8 +57,8 @@ void main(){
 }
 ` + "\x00"
 
-//mini FXAA
-var Postprocessfragmentshader_fxaa = `#version 330
+//Sample post process shader to apply FXAA
+var PostprocessfragmentshaderFxaa = `#version 330
 #define FXAA_REDUCE_MIN (1.0/128.0)
 #define FXAA_REDUCE_MUL (1.0/8.0)
 #define FXAA_SPAN_MAX 8.0
@@ -96,7 +100,8 @@ void main(){
 	}
 }` + "\x00"
 
-var Postprocessfragmentshader_wobbly = `#version 330
+//Sample post process shader to make the texture all wavy
+var PostprocessfragmentshaderWobbly = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;
@@ -112,7 +117,8 @@ void main() {
 }
 ` + "\x00"
 
-var Postprocessfragmentshader_flip = `#version 330
+//Sample post process shader to flip texture top-botom (usefull for awesomium)
+var PostprocessfragmentshaderFlip = `#version 330
 uniform sampler2D tex;
 uniform vec2 resolution;
 uniform float time;

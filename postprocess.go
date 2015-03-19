@@ -13,6 +13,7 @@ var fstri struct {
 	pos, uv Buffer
 }
 
+//InitPostProcessSystem will allocate all the resources required to make the Image Post Processing system work.
 func InitPostProcessSystem() {
 	//init model
 	quadvao := GenVertexArray()
@@ -32,12 +33,14 @@ func InitPostProcessSystem() {
 	fstri.uv = vertuv
 }
 
+//PostProcessFramebufferer is an interface to represent a single PostProcess effect.
 type PostProcessFramebufferer interface {
 	PreRender()
 	Render(Texture2D)
 	SetNext(PostProcessFramebufferer)
 }
 
+//PostProcessFramebuffer is the generic post process framebuffer
 type PostProcessFramebuffer struct {
 	Fb           Framebuffer
 	Tex          Texture2D
@@ -46,10 +49,14 @@ type PostProcessFramebuffer struct {
 	time, source UniformLocation
 }
 
-//post process framebuffers are a tool to queue fullscreen fragment shader passes
+//NewPostProcessFramebuffer creates a new PostProcessFramebuffer and allocated all the ressources.
+//You do not control the vertex shader but you can give a fragment shader. The fragment shader must have the following uniforms:
+//	-resolution: float vec2, representing the size of the texture
+//	-time: float, glfw time since the begining of the program
+//	-tex: sampler2D, the input texture to this post process pass
 func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*PostProcessFramebuffer, error) {
 	ppf := PostProcessFramebuffer{}
-	vs, err := CompileShader(_fullscreen_vertex_shader, VertexShader)
+	vs, err := CompileShader(_fullscreenVertexShader, VertexShader)
 	if err != nil {
 		return &ppf, err
 	}
@@ -87,6 +94,7 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 	return &ppf, nil
 }
 
+//PreRender binds either the next post process fbo if there is one or unbinds any fbo to render to screen. Also disable depth test.
 func (ppfb *PostProcessFramebuffer) PreRender() {
 	if ppfb.next != nil {
 		ppfb.Fb.Bind()
@@ -96,11 +104,12 @@ func (ppfb *PostProcessFramebuffer) PreRender() {
 	gl.Disable(gl.DEPTH_TEST)
 }
 
+//PostRender renable depth test
 func (ppfb *PostProcessFramebuffer) PostRender() {
 	gl.Enable(gl.DEPTH_TEST)
 }
 
-//should be called a 'pass'?
+//Render takes a texture and feed it to the fragment shader as a fullscreen texture. It will call the next post process pass if there is one.
 func (ppfb *PostProcessFramebuffer) Render(t Texture2D) {
 	ppfb.Prog.Use()
 	ppfb.time.Uniform1f(float32(glfw.GetTime()))
@@ -115,16 +124,19 @@ func (ppfb *PostProcessFramebuffer) Render(t Texture2D) {
 	}
 }
 
+//SetNext sets the post process effect to pass automatically after this post process.
 func (ppfb *PostProcessFramebuffer) SetNext(n PostProcessFramebufferer) {
 	ppfb.next = n
 }
 
+//Delete releases all the resources allocated to this post process fbo.
 func (ppfb *PostProcessFramebuffer) Delete() {
 	ppfb.Prog.Delete()
 	ppfb.Tex.Delete()
 	ppfb.Fb.Delete()
 }
 
+//Fstri draws a fullscreen triangle such that it covers the entire screen with uv coordinates from [0,0]-[1,1]
 func Fstri() {
 	fstri.vao.Bind()
 	defer fstri.vao.Unbind()
@@ -139,7 +151,7 @@ func Fstri() {
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
 }
 
-var _fullscreen_vertex_shader = `
+var _fullscreenVertexShader = `
 #version 330
 layout (location=0) in vec2 vert;
 layout (location=1) in vec2 vertTexCoord;
@@ -153,7 +165,3 @@ void main() {
 //technicly a fullscreen triangle now
 var _quadvertpos = []float32{3, 1, -1, 1, -1, -3}
 var _quadvertuv = []float32{2, 1, 0, 1, 0, -1}
-
-type UIFramebuffer struct {
-	PostProcessFramebuffer
-}

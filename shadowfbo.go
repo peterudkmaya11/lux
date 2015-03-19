@@ -6,6 +6,7 @@ import (
 	glm "github.com/go-gl/mathgl/mgl32"
 )
 
+//ShadowFBO is the structure to hold all the resources required to render shadow maps.
 type ShadowFBO struct {
 	framebuffer          Framebuffer
 	texture              Texture2D
@@ -15,6 +16,8 @@ type ShadowFBO struct {
 	width, height        int32
 }
 
+//NewShadowFBO will create a new FBO, a new depth texture and the program needed to generate shadow map
+//currently not optimized, we should probably reuse the FBO and absolutely reuse the program.
 func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	sfbo := ShadowFBO{}
 	fbo := GenFramebuffer()
@@ -44,12 +47,12 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 		return &sfbo, errors.New("framebuffer incomplete")
 	}
 
-	vs, err := CompileShader(_shadow_fbo_vertex_shader, VertexShader)
+	vs, err := CompileShader(_shadowFboVertexShader, VertexShader)
 	if err != nil {
 		return &sfbo, err
 	}
 	defer vs.Delete()
-	fs, err := CompileShader(_shadow_fbo_fragment_shader, FragmentShader)
+	fs, err := CompileShader(_shadowFboFragmentShader, FragmentShader)
 	if err != nil {
 		return &sfbo, err
 	}
@@ -65,27 +68,33 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	return &sfbo, nil
 }
 
+//SetOrtho sets the projection matrix to be used.
 func (sfbo *ShadowFBO) SetOrtho(left, right, bottom, top, near, far float32) {
 	sfbo.projection = glm.Ortho(left, right, bottom, top, near, far)
 }
 
+//LookAt sets the view matrix to look at (tx,ty,tz) from (ex,ey,ez), the up direction is always (0,1,0).
 func (sfbo *ShadowFBO) LookAt(ex, ey, ez, tx, ty, tz float32) {
 	sfbo.view = glm.LookAt(ex, ey, ez, tx, ty, tz, 0, 1, 0)
 }
 
+//BindForDrawing binds this fbo, change face culling for back face, start using the shadow program, calculate projection and clears the texture.
 func (sfbo *ShadowFBO) BindForDrawing() {
 	sfbo.framebuffer.Bind()
 	sfbo.program.Use()
 	sfbo.vp = sfbo.projection.Mul4(sfbo.view)
 	gl.Clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-	ViewPortChange(sfbo.width, sfbo.height)
+	ViewportChange(sfbo.width, sfbo.height)
 	gl.CullFace(gl.FRONT)
 }
 
+//Unbind return cull face to front and unbind this fbo.
 func (sfbo *ShadowFBO) Unbind() {
+	sfbo.framebuffer.Unbind()
 	gl.CullFace(gl.BACK)
 }
 
+//Render takes a mesh and a transform and render them, adding them to the depth texture data.
 func (sfbo *ShadowFBO) Render(mesh Mesh, transform *Transform) {
 	mvpmat := sfbo.vp.Mul4(transform.Mat4())
 	sfbo.mvpUni.UniformMatrix4fv(1, false, &mvpmat[0])
@@ -93,21 +102,24 @@ func (sfbo *ShadowFBO) Render(mesh Mesh, transform *Transform) {
 	mesh.DrawCall()
 }
 
+//ShadowMap return the depth texture.
 func (sfbo *ShadowFBO) ShadowMap() Texture2D {
 	return sfbo.texture
 }
 
+//ShadowMat return the 4x4 matric that represent world-to-screen transform used to check pixel occlusion.
 func (sfbo *ShadowFBO) ShadowMat() glm.Mat4 {
 	return depthscaling.Mul4(sfbo.vp)
 }
 
+//Delete will clean up all the resources allocated to this FBO.
 func (sfbo *ShadowFBO) Delete() {
 	sfbo.texture.Delete()
 	sfbo.framebuffer.Delete()
 	sfbo.program.Delete()
 }
 
-var _shadow_fbo_vertex_shader = `
+var _shadowFboVertexShader = `
 #version 330 core
 uniform mat4 mvp;
 
@@ -118,7 +130,7 @@ void main(){
 }
 ` + "\x00"
 
-var _shadow_fbo_fragment_shader = `
+var _shadowFboFragmentShader = `
 #version 330 core
 
 layout(location=0) out float x;

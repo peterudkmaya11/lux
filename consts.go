@@ -4,8 +4,10 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
+//ShaderType is a high level representation of OpenGL shader types.
 type ShaderType uint32
 
+//All Shader types
 const (
 	VertexShader   ShaderType = gl.VERTEX_SHADER
 	FragmentShader            = gl.FRAGMENT_SHADER
@@ -18,29 +20,34 @@ const (
 	layoutVertexNormal   = 2
 )
 
+//lux standard Active texture layout.
 const (
 	TextureUnitDiffuse      = gl.TEXTURE0
 	TextureUnitNormalMap    = gl.TEXTURE1
 	TextureUnitDisplacement = gl.TEXTURE2
 )
 
+//lux standard active texture layout.
 const (
 	TextureUniformDiffuse      = 0
 	TextureUniformNormalMap    = 1
 	TextureUniformDisplacement = 2
 )
 
+//FramebufferTarget is a high level representation of OpenGL framebuffer targets.
 type FramebufferTarget uint32
 
+//All possible framebuffer target.
 const (
 	DrawFramebuffer     FramebufferTarget = gl.DRAW_FRAMEBUFFER
 	ReadFramebuffer                       = gl.READ_FRAMEBUFFER
 	ReadDrawFramebuffer                   = gl.FRAMEBUFFER
 )
 
-//
+//FramebufferAttachement is a high level representation fo OpenGL framebuffer attachements
 type FramebufferAttachement uint32
 
+//all possible framebuffer attachement.
 const (
 	ColorAttachement0       FramebufferAttachement = gl.COLOR_ATTACHMENT0
 	ColorAttachement1                              = gl.COLOR_ATTACHMENT1

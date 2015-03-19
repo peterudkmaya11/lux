@@ -1,12 +1,12 @@
 package lux
 
 import (
-	"errors"
 	"fmt" //for error
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"strings" //for string manip
 )
 
+//NewProgram will create an OpenGL program from the given shaders, any combinations can be used
 func NewProgram(shaders ...Shader) (Program, error) {
 	program := gl.CreateProgram()
 
@@ -24,7 +24,7 @@ func NewProgram(shaders ...Shader) (Program, error) {
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
 
-		return 0, errors.New(fmt.Sprintf("failed to link program: %v", log))
+		return 0, fmt.Errorf("failed to link program: %v", log)
 	}
 
 	return Program(program), nil

@@ -10,6 +10,7 @@ import (
 	"unsafe"
 )
 
+//SaveTexture2D take a Texture2D and a filename and saves it as a png image.
 func SaveTexture2D(t Texture2D, filename string) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
 	defer file.Close()

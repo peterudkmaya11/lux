@@ -5,6 +5,7 @@ import (
 	glm "github.com/go-gl/mathgl/mgl32"
 )
 
+//GBuffer is lux implementation of a geometry buffer for defered rendering
 type GBuffer struct {
 	framebuffer                                  Framebuffer
 	program                                      Program
@@ -20,9 +21,10 @@ type GBuffer struct {
 	//View uniforms
 	CamPosUni UniformLocation
 	//cook torrance
-	Cook_roughnessValue, Cook_F0, Cook_k UniformLocation
+	CookRoughnessValue, CookF0, CookK UniformLocation
 }
 
+//AggregateFB is the FBO used to aggregate all the textures that the geometry shader built.
 type AggregateFB struct {
 	framebuffer                          Framebuffer
 	program                              Program
@@ -30,6 +32,7 @@ type AggregateFB struct {
 	Out                                  Texture2D
 }
 
+//NewGBuffer will create a new geometry buffer and allocate all the resources required
 func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.width, gbuffer.height = width, height
 	fb := GenFramebuffer()
@@ -81,11 +84,11 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.PositionTex = positionTex
 	gbuffer.DepthTex = depthtex
 
-	vs, err := CompileShader(_gbuffer_vertex_shader_source, VertexShader)
+	vs, err := CompileShader(_gbufferVertexShaderSource, VertexShader)
 	if err != nil {
 		return
 	}
-	fs, err := CompileShader(_gbuffer_fragment_shader_source, FragmentShader)
+	fs, err := CompileShader(_gbufferFragmentShaderSource, FragmentShader)
 	if err != nil {
 		return
 	}
@@ -113,11 +116,11 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb := AggregateFB{}
 	gbuffer.AggregateFramebuffer = aggfb
 
-	avs, err := CompileShader(_fullscreen_vertex_shader, VertexShader)
+	avs, err := CompileShader(_fullscreenVertexShader, VertexShader)
 	if err != nil {
 		return
 	}
-	afs, err := CompileShader(_gbuffer_aggregate_fragment_shader, FragmentShader)
+	afs, err := CompileShader(_gbufferAggregateFragmentShader, FragmentShader)
 	if err != nil {
 		return
 	}
@@ -151,9 +154,9 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.CamPosUni = aprog.GetUniformLocation("cam_pos")
 
 	//test data for cook torrance shader
-	gbuffer.Cook_roughnessValue = aprog.GetUniformLocation("roughnessValue")
-	gbuffer.Cook_F0 = aprog.GetUniformLocation("F0")
-	gbuffer.Cook_k = aprog.GetUniformLocation("k")
+	gbuffer.CookRoughnessValue = aprog.GetUniformLocation("roughnessValue")
+	gbuffer.CookF0 = aprog.GetUniformLocation("F0")
+	gbuffer.CookK = aprog.GetUniformLocation("k")
 
 	aggfb.framebuffer.DrawBuffers(ColorAttachement0)
 	aggfb.framebuffer.Texture(ReadDrawFramebuffer, ColorAttachement0, aggfb.Out, 0)
@@ -162,6 +165,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	return
 }
 
+//Bind binds the FBO and calcualte view-projection.
 func (gb *GBuffer) Bind(cam *Camera) {
 	gb.framebuffer.Bind()
 	gb.program.Use()
@@ -169,12 +173,12 @@ func (gb *GBuffer) Bind(cam *Camera) {
 	gb.vp = cam.Projection.Mul4(cam.View)
 	gb.view = cam.View
 
-	ViewPortChange(gb.width, gb.height)
+	ViewportChange(gb.width, gb.height)
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 }
 
-//testing in progress
+//Render will render the mesh in the different textures. No lighting calculation is performed here.
 func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
 
 	model := t.Mat4()
@@ -194,14 +198,15 @@ func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
 	mesh.DrawCall()
 }
 
+//Aggregate performs the lighting calculation per pixel. This is essentially a special post process pass.
 func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex Texture2D, f1, f2, f3 float32) {
 	gb.AggregateFramebuffer.framebuffer.Bind()
 
 	gb.AggregateFramebuffer.program.Use()
 
-	gb.Cook_roughnessValue.Uniform1f(f1)
-	gb.Cook_F0.Uniform1f(f2)
-	gb.Cook_k.Uniform1f(f3)
+	gb.CookRoughnessValue.Uniform1f(f1)
+	gb.CookF0.Uniform1f(f2)
+	gb.CookK.Uniform1f(f3)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gb.DiffuseTex.Bind()
@@ -248,7 +253,7 @@ func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.M
 	Fstri()
 }
 
-var _gbuffer_vertex_shader_source = `
+var _gbufferVertexShaderSource = `
 #version 330
 uniform mat4 M;
 uniform mat4 MVP;
@@ -269,7 +274,7 @@ void main() {
 }
 ` + "\x00"
 
-var _gbuffer_fragment_shader_source = `
+var _gbufferFragmentShaderSource = `
 #version 330
 uniform sampler2D diffuse;
 uniform mat4 N;
@@ -288,7 +293,7 @@ void main() {
 ` + "\x00"
 
 //shouldnt be there
-var _gbuffer_aggregate_fragment_shader = `
+var _gbufferAggregateFragmentShader = `
 #version 330
 #define MAX_POINT_LIGHT 8
 
@@ -327,24 +332,9 @@ void main(){
 	shadowcoord.z+=0.005;
 	float shadow = texture(shadowmap, shadowcoord.xyz,0);
 
-
-	//float light =0;
-	//for(int i = 0; i < NUM_POINT_LIGHT; i++){
-	//	light+=max(0,dot(normal, point_light_pos[i]-world_position));
-	//}
-	//float luma = 0.3;
-	
-	//luma = max(luma,light);
-	//luma = min(shadow,luma);
-	//luma = clamp(luma,0.3,1);
-	//outColor = texture(diffusetex, uv)*luma;
-
 	//////cook torrance
 
 	//material values
-	//float roughnessValue = 0.1;
-	//float F0 = 0.8; //fresnel reflectance at normal incidence
-	//float k = 0.2; //fraction of diffuse reflection (specular reflection = 1 - k)
 	vec3 lightColor = vec3(0.9,0.1,0.1);
 
 	vec3 world_pos = texture(postex, uv).xyz;

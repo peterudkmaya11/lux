@@ -13,6 +13,7 @@ func letsglowLETSGLOW() {
 	}
 }
 
+//SetContext will set a OpenGL core 3.3 context with foward compatibility and debug context
 func SetContext() {
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
@@ -29,19 +30,19 @@ func glbs() {
 	gl.Enable(gl.CULL_FACE)
 }
 
-//Will call glfw.Init and panic if it fails
+//InitGLFW will call glfw.Init and panic if it fails
 func InitGLFW() {
 	if err := glfw.Init(); err != nil {
 		panic("failed to initialize glfw")
 	}
 }
 
-//Alias to glfw.Terminate
+//TerminateGLFW is an alias for glfw.Terminate
 func TerminateGLFW() {
 	glfw.Terminate()
 }
 
-//Create a new glfw window. If fullscreen will place the screen on primary monitor.
+//CreateWindow creates a new glfw window. If fullscreen will place the screen on primary monitor.
 func CreateWindow(width, height int, title string, fullscreen bool) (window *glfw.Window) {
 	SetContext()
 	var x *glfw.Monitor

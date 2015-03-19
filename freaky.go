@@ -29,6 +29,7 @@ func ptr(v interface{}) unsafe.Pointer {
 	return unsafe.Pointer(et.UnsafeAddr())
 }
 
+//Ptr is simply a copy of the go-gl Ptr function, it takes in argument a slice, uintptr or pointer and makes an unsafe.Pointer with it.
 func Ptr(v interface{}) unsafe.Pointer {
 
 	if v == nil {

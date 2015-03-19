@@ -5,10 +5,10 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"image"
 	"image/draw"
-	_ "image/png"
 	"os"
 )
 
+//LoadPng tries to load a png file from hard drive and upload it to the GPU.
 func LoadPng(file string) (Texture2D, error) {
 	imgFile, err := os.Open(file)
 	if err != nil {

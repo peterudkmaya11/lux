@@ -4,12 +4,13 @@ import (
 	"io/ioutil"
 )
 
+//RenderProgram is the lux representation of a OpenGL program vertex-fragment along with all the common uniforms. This may get
 type RenderProgram struct {
 	Prog                            Program
 	M, V, P, Diffuse, Light, N, Eye UniformLocation
 }
 
-//Load a vertex-fragment program and gathers:
+//LoadProgram loads a vertex-fragment program and gathers:
 //"M": model matrix uniform
 //"V": view matrix uniform
 //"P": projection matrix uniform
@@ -50,8 +51,9 @@ func LoadProgram(vertexfile, fragfile string) (out RenderProgram, err error) {
 	return
 }
 
-func (this *RenderProgram) Delete() {
-	this.Prog.Delete()
+//Delete releases all resources held by this program object
+func (rp *RenderProgram) Delete() {
+	rp.Prog.Delete()
 }
 
 /*
