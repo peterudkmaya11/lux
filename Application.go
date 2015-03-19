@@ -29,16 +29,19 @@ func glbs() {
 	gl.Enable(gl.CULL_FACE)
 }
 
+//Will call glfw.Init and panic if it fails
 func InitGLFW() {
 	if err := glfw.Init(); err != nil {
 		panic("failed to initialize glfw")
 	}
 }
 
+//Alias to glfw.Terminate
 func TerminateGLFW() {
 	glfw.Terminate()
 }
 
+//Create a new glfw window. If fullscreen will place the screen on primary monitor.
 func CreateWindow(width, height int, title string, fullscreen bool) (window *glfw.Window) {
 	SetContext()
 	var x *glfw.Monitor

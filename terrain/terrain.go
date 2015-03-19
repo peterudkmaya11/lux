@@ -6,11 +6,7 @@ import (
 	"luxengine.net/lux"
 )
 
-/*
-y*width+x
-*/
-
-//will make a model 2 rows and 2 columns less big, we cannot accurately calculate normals for the outer vertices
+//Will return a (n-2)(n-2) heightmap. We need the 4 adjacent vertices to accuratelly calculate normals.
 func NewTerrain(heightmap [][]float32, scale float32) (lux.Mesh, error) {
 	width := len(heightmap) - 2
 	height := len(heightmap[0]) - 2
@@ -51,13 +47,15 @@ func NewTerrain(heightmap [][]float32, scale float32) (lux.Mesh, error) {
 	return lux.NewVUNModel(indices, vertices, uvs, normals), nil
 }
 
+//given 3 vertices, returns the normal of the plane formed by this triangle
+//TODO: move to a math package
 func NormalToPlane(v1, v2, v3 glm.Vec3) glm.Vec3 {
 	u := v2.Sub(v1)
 	v := v3.Sub(v1)
 	return glm.Vec3{u.Y()*v.Z() - u.Z()*v.Y(), u.Z()*v.X() - u.X()*v.Z(), u.X()*v.Y() - u.Y()*v.X()}
 }
 
-//must be normalized
+//Return the average of the vectors. they must be normalized.
 func AverageVec(vecs ...glm.Vec3) glm.Vec3 {
 	x, y, z := float32(0), float32(0), float32(0)
 	for _, vec := range vecs {
