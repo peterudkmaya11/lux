@@ -325,19 +325,19 @@ void main(){
 
 	vec4 shadowcoord = shadowmat*vec4(world_position, 1);
 	shadowcoord.z+=0.005;
-	float shadow = texture(shadowmap, shadowcoord.xyz,0.5);
+	float shadow = texture(shadowmap, shadowcoord.xyz,0);
 
 
-	float light =0;
-	for(int i = 0; i < NUM_POINT_LIGHT; i++){
-		light+=max(0,dot(normal, point_light_pos[i]-world_position));
-	}
-	float luma = 0.3;
+	//float light =0;
+	//for(int i = 0; i < NUM_POINT_LIGHT; i++){
+	//	light+=max(0,dot(normal, point_light_pos[i]-world_position));
+	//}
+	//float luma = 0.3;
 	
-	luma = max(luma,light);
-	luma = min(shadow,luma);
-	luma = clamp(luma,0.3,1);
-	outColor = texture(diffusetex, uv)*luma;
+	//luma = max(luma,light);
+	//luma = min(shadow,luma);
+	//luma = clamp(luma,0.3,1);
+	//outColor = texture(diffusetex, uv)*luma;
 
 	//////cook torrance
 
@@ -352,26 +352,27 @@ void main(){
 
 	float NdL = max(dot(normal, lightDir), 0);
 
-	float specular = 0.0;
+	float lux = shadow;
+	if(shadow > 0){
+		float specular = 0.0;
+		if(NdL > 0.0){
+			vec3 eyeDir = normalize(cam_pos-world_pos);
 
-	if(NdL > 0.0){
-		vec3 eyeDir = normalize(cam_pos-world_pos);
+			vec3 halfVec = normalize(lightDir+eyeDir);
+			float NdH = max(0,dot(normal,halfVec));
+			float NdV = max(0,dot(normal, eyeDir));
+			float VdH = max(0,dot(eyeDir, halfVec));
+			float mSqu = roughnessValue*roughnessValue;
 
-		vec3 halfVec = normalize(lightDir+eyeDir);
-		float NdH = max(0,dot(normal,halfVec));
-		float NdV = max(0,dot(normal, eyeDir));
-		float VdH = max(0,dot(eyeDir, halfVec));
-		float mSqu = roughnessValue*roughnessValue;
-
-		float NH2 = 2.0*NdH;
-		float geoAtt = min(1.0,min((NH2*NdV)/VdH,(NH2*NdL)/VdH));
-		float roughness = (1.0 / ( 4.0 * mSqu * pow(NdH, 4.0)))*exp((NdH * NdH - 1.0) / (mSqu * NdH * NdH));
-		float fresnel = pow(1.0 - VdH, 5.0)*(1.0 - F0)+F0;
-		specular = (fresnel*geoAtt*roughness)/(NdV*NdL*3.14);
+			float NH2 = 2.0*NdH;
+			float geoAtt = min(1.0,min((NH2*NdV)/VdH,(NH2*NdL)/VdH));
+			float roughness = (1.0 / ( 4.0 * mSqu * pow(NdH, 4.0)))*exp((NdH * NdH - 1.0) / (mSqu * NdH * NdH));
+			float fresnel = pow(1.0 - VdH, 5.0)*(1.0 - F0)+F0;
+			specular = (fresnel*geoAtt*roughness)/(NdV*NdL*3.14);
+		}
+		lux=NdL * (k + specular * (1.0 - k));
 	}
-
-	float cook =NdL * (k + specular * (1.0 - k));
-	outColor = texture(diffusetex, uv)*cook;
+	outColor = texture(diffusetex, uv)*lux;
 }
 ` + "\x00"
 
