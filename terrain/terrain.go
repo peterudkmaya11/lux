@@ -3,7 +3,7 @@ package terrain
 import (
 	"errors"
 	glm "github.com/go-gl/mathgl/mgl32"
-	lux "github.com/luxengine/lux"
+	"luxengine.net/lux"
 )
 
 /*
