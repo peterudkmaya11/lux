@@ -61,44 +61,6 @@ func (b Buffer) Delete() {
 	gl.DeleteBuffers(1, (*uint32)(&b))
 }
 
-//UniformLocation is the high level representation of openGL shader uniform location, generated via the program object.
-type UniformLocation int32
-
-//UniformMatrix4fv upload a 4x4 matrix.
-func (ul UniformLocation) UniformMatrix4fv(count int32, transpose bool, values *float32) {
-	gl.UniformMatrix4fv(int32(ul), count, transpose, values)
-}
-
-//Uniform1i upload an int32.
-func (ul UniformLocation) Uniform1i(v0 int32) {
-	gl.Uniform1i(int32(ul), v0)
-}
-
-//Uniform3fv upload a vec3 of floats via vector.
-func (ul UniformLocation) Uniform3fv(count int32, values *float32) {
-	gl.Uniform3fv(int32(ul), count, values)
-}
-
-//Uniform2f upload a vec2 of floats via values.
-func (ul UniformLocation) Uniform2f(v0, v1 float32) {
-	gl.Uniform2f(int32(ul), v0, v1)
-}
-
-//Uniform1f upload a float.
-func (ul UniformLocation) Uniform1f(v0 float32) {
-	gl.Uniform1f(int32(ul), v0)
-}
-
-//Uniform2i upload a vec2 of ints via values.
-func (ul UniformLocation) Uniform2i(v0, v1 int32) {
-	gl.Uniform2i(int32(ul), v0, v1)
-}
-
-//Uniform2fv upload a vec2 of floats via vector.
-func (ul UniformLocation) Uniform2fv(v *[2]float32) {
-	gl.Uniform2fv(int32(ul), 1, &v[0])
-}
-
 //GetCurrentTexture2D generate a single texture2D.
 func GetCurrentTexture2D() Texture2D {
 	var i int32
