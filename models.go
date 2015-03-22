@@ -44,42 +44,42 @@ func NewVUNModel(indices []uint16, indexedVertices []glm.Vec3, indexedUvs []glm.
 	//Positions
 	m.Positions = GenBuffer()
 	m.Positions.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(indexedVertices)*3*4, ptr(indexedVertices), gl.STATIC_DRAW)
+	m.Positions.Data(gl.ARRAY_BUFFER, len(indexedVertices)*3*4, ptr(indexedVertices), gl.STATIC_DRAW)
 
 	//Uvs
 	m.Uvs = GenBuffer()
 	m.Uvs.Bind(gl.ARRAY_BUFFER)
-	// And yet, the weird length stuff doesn't seem to matter for UV or normal //<- wtf is this guy talking about
-	gl.BufferData(gl.ARRAY_BUFFER, len(indexedUvs)*2*4, ptr(indexedUvs), gl.STATIC_DRAW)
+	m.Uvs.Data(gl.ARRAY_BUFFER, len(indexedUvs)*2*4, ptr(indexedUvs), gl.STATIC_DRAW)
 
 	//Normals
 	m.Normals = GenBuffer()
 	m.Normals.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(indexedNormals)*3*4, ptr(indexedNormals), gl.STATIC_DRAW)
+	m.Normals.Data(gl.ARRAY_BUFFER, len(indexedNormals)*3*4, ptr(indexedNormals), gl.STATIC_DRAW)
 
 	//indices
 	m.Indices = GenBuffer()
 	m.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*2, ptr(indices), gl.STATIC_DRAW)
+	m.Indices.Data(gl.ELEMENT_ARRAY_BUFFER, len(indices)*2, ptr(indices), gl.STATIC_DRAW)
 
 	return &m
 }
 
 //Bind the vertex array and all vertex attrib required to render this mesh.
 func (m *VUNMesh) Bind() {
-	m.VAO.Bind()
+	vao := m.VAO
+	vao.Bind()
 
-	gl.EnableVertexAttribArray(0)
+	vao.EnableVertexAttribArray(0)
 	m.Positions.Bind(gl.ARRAY_BUFFER)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
+	vao.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
 
-	gl.EnableVertexAttribArray(1)
+	vao.EnableVertexAttribArray(1)
 	m.Uvs.Bind(gl.ARRAY_BUFFER)
-	gl.VertexAttribPointer(1, 2, gl.FLOAT, false, 0, nil)
+	vao.VertexAttribPointer(1, 2, gl.FLOAT, false, 0, nil)
 
-	gl.EnableVertexAttribArray(2)
+	vao.EnableVertexAttribArray(2)
 	m.Normals.Bind(gl.ARRAY_BUFFER)
-	gl.VertexAttribPointer(2, 3, gl.FLOAT, false, 0, nil)
+	vao.VertexAttribPointer(2, 3, gl.FLOAT, false, 0, nil)
 
 	m.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 }

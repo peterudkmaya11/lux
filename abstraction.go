@@ -2,6 +2,7 @@ package lux
 
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"unsafe"
 )
 
 //Deletable is the interface to represent everything that can be unallocated.
@@ -33,6 +34,28 @@ func (va VertexArray) Unbind() {
 func (va VertexArray) Delete() {
 	gl.DeleteVertexArrays(1, (*uint32)(&va))
 }
+func (va VertexArray) EnableVertexAttribArray(index uint32) {
+	gl.EnableVertexAttribArray(index)
+}
+
+func (va VertexArray) DisableVertexAttribArray(index uint32) {
+	gl.DisableVertexAttribArray(index)
+}
+
+//VertexAttribPointer is an alias for glVertexAttribPointer
+func (va VertexArray) VertexAttribPointer(index uint32, size int32, xtype uint32, normalized bool, stride int32, pointer unsafe.Pointer) {
+	gl.VertexAttribPointer(index, size, xtype, normalized, stride, pointer)
+}
+
+//glVertexAttribIPointer is an alias for glglVertexAttribIPointer
+func (va VertexArray) VertexAttribIPointer(index uint32, size int32, xtype uint32, stride int32, pointer unsafe.Pointer) {
+	gl.VertexAttribIPointer(index, size, xtype, stride, pointer)
+}
+
+//glVertexAttribLPointer is an alias for glglVertexAttribLPointer
+func (va VertexArray) VertexAttribLPointer(index uint32, size int32, xtype uint32, stride int32, pointer unsafe.Pointer) {
+	gl.VertexAttribLPointer(index, size, xtype, stride, pointer)
+}
 
 //Buffer is the high level representation of OpenGL Buffer.
 //TODO: make subtype buffers with restrained functions
@@ -54,6 +77,11 @@ func (b Buffer) Bind(target uint32) {
 //Unbind binds buffer 0(zero). Alias to gl.BindBuffer(target, 0).
 func (b Buffer) Unbind(target uint32) {
 	gl.BindBuffer(target, 0)
+}
+
+//Data is an alias for gl.BufferData.
+func (b Buffer) Data(target uint32, size int, data unsafe.Pointer, usage uint32) {
+	gl.BufferData(target, size, data, usage)
 }
 
 //Delete this buffer

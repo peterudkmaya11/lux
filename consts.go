@@ -71,8 +71,43 @@ const (
 	None                                           = gl.NONE
 )
 
-/*
-'standard' supported texture:
+type DrawMode uint32
+
+const (
+	POINTS                   DrawMode = gl.POINTS
+	LINE_STRIP                        = gl.LINE_STRIP
+	LINE_LOOP                         = gl.LINE_LOOP
+	LINES                             = gl.LINES
+	LINE_STRIP_ADJACENCY              = gl.LINE_STRIP_ADJACENCY
+	LINES_ADJACENCY                   = gl.LINES_ADJACENCY
+	TRIANGLE_STRIP                    = gl.TRIANGLE_STRIP
+	TRIANGLE_FAN                      = gl.TRIANGLE_FAN
+	TRIANGLES                         = gl.TRIANGLES
+	TRIANGLE_STRIP_ADJACENCY          = gl.TRIANGLE_STRIP_ADJACENCY
+	TRIANGLES_ADJACENCY               = gl.TRIANGLES_ADJACENCY
+	PATCHES                           = gl.PATCHES
+)
+
+type BufferTarget int32
+
+const (
+	ARRAY_BUFFER              BufferTarget = gl.ARRAY_BUFFER              //OpenGL 2+
+	ELEMENT_ARRAY_BUFFER                   = gl.ELEMENT_ARRAY_BUFFER      //OpenGL 2+
+	PIXEL_PACK_BUFFER                      = gl.PIXEL_PACK_BUFFER         //OpenGL 2+
+	PIXEL_UNPACK_BUFFER                    = gl.PIXEL_UNPACK_BUFFER       //OpenGL 2+
+	COPY_READ_BUFFER                       = gl.COPY_READ_BUFFER          //OpenGL 3+
+	COPY_WRITE_BUFFER                      = gl.COPY_WRITE_BUFFER         //OpenGL 3+
+	TEXTURE_BUFFER                         = gl.TEXTURE_BUFFER            //OpenGL 3+
+	TRANSFORM_FEEDBACK_BUFFER              = gl.TRANSFORM_FEEDBACK_BUFFER //OpenGL 3+
+	UNIFORM_BUFFER                         = gl.UNIFORM_BUFFER            //OpenGL 3+
+	ATOMIC_COUNTER_BUFFER                  = gl.ATOMIC_COUNTER_BUFFER     //OpenGL 4+
+	DRAW_INDIRECT_BUFFER                   = gl.DRAW_INDIRECT_BUFFER      //OpenGL 4+
+	DISPATCH_INDIRECT_BUFFER               = gl.DISPATCH_INDIRECT_BUFFER  //OpenGL 4+
+	QUERY_BUFFER                           = gl.QUERY_BUFFER              //OpenGL 4+
+	SHADER_STORAGE_BUFFER                  = gl.SHADER_STORAGE_BUFFER     //OpenGL 4+
+)
+
+/* = gl.'standard' supported texture:
 diffuse
 normal
 displacement
