@@ -88,7 +88,7 @@ const (
 	PATCHES                           = gl.PATCHES
 )
 
-type BufferTarget int32
+type BufferTarget uint32
 
 const (
 	ARRAY_BUFFER              BufferTarget = gl.ARRAY_BUFFER              //OpenGL 2+

@@ -20,6 +20,13 @@ func GenVertexArray() VertexArray {
 	return VertexArray(va)
 }
 
+//GenVertexArrays generates 1 vertex array. Alias for glGenVertexArrays(1, &va).
+func GenVertexArrays(n int32) []VertexArray {
+	va := make([]VertexArray, n)
+	gl.GenVertexArrays(n, (*uint32)(&va[0]))
+	return va
+}
+
 //Bind this vertex array, Alias to gl.BindVertexArray(uint32(va)).
 func (va VertexArray) Bind() {
 	gl.BindVertexArray(uint32(va))
