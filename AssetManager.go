@@ -2,6 +2,7 @@ package lux
 
 import (
 	"log"
+	"luxengine.net/gl"
 	"strings"
 )
 
@@ -9,8 +10,8 @@ import (
 type AssetManager struct {
 	modelsDir, shadersDir, texturesDir string
 	Models                             map[string]Mesh
-	Textures                           map[string]Texture2D
-	Programs                           map[string]Program
+	Textures                           map[string]gl.Texture2D
+	Programs                           map[string]gl.Program
 }
 
 //NewAssetManager makes a new asset manager
@@ -21,8 +22,8 @@ type AssetManager struct {
 func NewAssetManager(root, models, shaders, textures string) (out AssetManager) {
 	out.modelsDir, out.shadersDir, out.texturesDir = root+models, root+shaders, root+textures
 	out.Models = make(map[string]Mesh)
-	out.Textures = make(map[string]Texture2D)
-	out.Programs = make(map[string]Program)
+	out.Textures = make(map[string]gl.Texture2D)
+	out.Programs = make(map[string]gl.Program)
 	return out
 }
 

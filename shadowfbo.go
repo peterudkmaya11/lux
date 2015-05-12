@@ -4,15 +4,16 @@ import (
 	"errors"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
+	gl2 "luxengine.net/gl"
 )
 
 //ShadowFBO is the structure to hold all the resources required to render shadow maps.
 type ShadowFBO struct {
-	framebuffer          Framebuffer
-	texture              Texture2D
+	framebuffer          gl2.Framebuffer
+	texture              gl2.Texture2D
 	projection, view, vp glm.Mat4
-	program              Program
-	mvpUni               UniformLocation
+	program              gl2.Program
+	mvpUni               gl2.UniformLocation
 	width, height        int32
 }
 
@@ -20,13 +21,13 @@ type ShadowFBO struct {
 //currently not optimized, we should probably reuse the FBO and absolutely reuse the program.
 func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	sfbo := ShadowFBO{}
-	fbo := GenFramebuffer()
+	fbo := gl2.GenFramebuffer()
 	sfbo.width, sfbo.height = width, height
 	sfbo.framebuffer = fbo
-	fbo.Bind()
-	defer fbo.Unbind()
+	fbo.Bind(gl2.ReadDrawFramebuffer)
+	defer fbo.Unbind(gl2.ReadDrawFramebuffer)
 
-	shadowtex := GenTexture2D()
+	shadowtex := gl2.GenTexture2D()
 	sfbo.texture = shadowtex
 	shadowtex.Bind()
 	defer shadowtex.Unbind()
@@ -38,21 +39,21 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL)
 	shadowtex.TexImage2D(0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, nil)
 
-	fbo.Texture(ReadDrawFramebuffer, DepthAttachement, shadowtex, 0 /*level*/)
+	fbo.Texture(gl2.ReadDrawFramebuffer, gl2.DepthAttachement, shadowtex, 0 /*level*/)
 
-	fbo.DrawBuffer(None)
-	fbo.ReadBuffer(None)
+	fbo.DrawBuffer(gl2.None)
+	fbo.ReadBuffer(gl2.None)
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		return &sfbo, errors.New("framebuffer incomplete")
 	}
 
-	vs, err := CompileShader(_shadowFboVertexShader, VertexShader)
+	vs, err := CompileShader(_shadowFboVertexShader, gl2.VertexShader)
 	if err != nil {
 		return &sfbo, err
 	}
 	defer vs.Delete()
-	fs, err := CompileShader(_shadowFboFragmentShader, FragmentShader)
+	fs, err := CompileShader(_shadowFboFragmentShader, gl2.FragmentShader)
 	if err != nil {
 		return &sfbo, err
 	}
@@ -80,7 +81,7 @@ func (sfbo *ShadowFBO) LookAt(ex, ey, ez, tx, ty, tz float32) {
 
 //BindForDrawing binds this fbo, change face culling for back face, start using the shadow program, calculate projection and clears the texture.
 func (sfbo *ShadowFBO) BindForDrawing() {
-	sfbo.framebuffer.Bind()
+	sfbo.framebuffer.Bind(gl2.ReadDrawFramebuffer)
 	sfbo.program.Use()
 	sfbo.vp = sfbo.projection.Mul4(sfbo.view)
 	gl.Clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
@@ -90,7 +91,7 @@ func (sfbo *ShadowFBO) BindForDrawing() {
 
 //Unbind return cull face to front and unbind this fbo.
 func (sfbo *ShadowFBO) Unbind() {
-	sfbo.framebuffer.Unbind()
+	sfbo.framebuffer.Unbind(gl2.ReadDrawFramebuffer)
 	gl.CullFace(gl.BACK)
 }
 
@@ -103,7 +104,7 @@ func (sfbo *ShadowFBO) Render(mesh Mesh, transform *Transform) {
 }
 
 //ShadowMap return the depth texture.
-func (sfbo *ShadowFBO) ShadowMap() Texture2D {
+func (sfbo *ShadowFBO) ShadowMap() gl2.Texture2D {
 	return sfbo.texture
 }
 

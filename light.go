@@ -1,9 +1,13 @@
 package lux
 
+import (
+	"luxengine.net/gl"
+)
+
 //Light is the interface that group all the common light operations.
 type Light interface {
 	SetColor(float32, float32, float32)
-	Upload(UniformLocation)
+	Upload(gl.UniformLocation)
 	CastsShadow(bool)
 }
 
@@ -27,7 +31,7 @@ func (pl *PointLight) SetColor(r, g, b float32) {
 }
 
 //Upload is a placeholder, dont call it will panic.
-func (pl *PointLight) Upload(u UniformLocation) {
+func (pl *PointLight) Upload(u gl.UniformLocation) {
 	panic("unimplemented")
 }
 
@@ -56,7 +60,7 @@ func (sl *SpotLight) SetColor(r, g, b float32) {
 }
 
 //Upload is a placeholder, dont call it will panic.
-func (sl *SpotLight) Upload(u UniformLocation) {
+func (sl *SpotLight) Upload(u gl.UniformLocation) {
 	panic("unimplemented")
 }
 
@@ -83,7 +87,7 @@ func (dl *DirectionalLight) SetColor(r, g, b float32) {
 }
 
 //Upload is a placeholder, dont call it will panic.
-func (dl *DirectionalLight) Upload(u UniformLocation) {
+func (dl *DirectionalLight) Upload(u gl.UniformLocation) {
 	panic("unimplemented")
 }
 

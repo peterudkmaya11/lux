@@ -3,12 +3,13 @@ package lux
 import (
 	"fmt"
 	"github.com/go-gl/gl/v3.3-core/gl"
+	gl2 "luxengine.net/gl"
 	"strings"
 )
 
 //Shader represent an OpenGL shader object along with its type.
 type Shader struct {
-	Stype ShaderType
+	Stype gl2.ShaderType
 	Loc   uint32
 }
 
@@ -18,7 +19,7 @@ func (s Shader) Delete() {
 }
 
 //CompileShader will take the shader source and generate a shader object based on which type you give it. Returns an error if it fails
-func CompileShader(source string, shaderType ShaderType) (Shader, error) {
+func CompileShader(source string, shaderType gl2.ShaderType) (Shader, error) {
 	shader := gl.CreateShader(uint32(shaderType))
 
 	csource := gl.Str(source)

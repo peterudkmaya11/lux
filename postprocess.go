@@ -4,27 +4,28 @@ import (
 	"errors"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
+	gl2 "luxengine.net/gl"
 )
 
 //the post process fullscreen quad mesh
 
 var fstri struct {
-	vao     VertexArray
-	pos, uv Buffer
+	vao     gl2.VertexArray
+	pos, uv gl2.Buffer
 }
 
 //InitPostProcessSystem will allocate all the resources required to make the Image Post Processing system work.
 func InitPostProcessSystem() {
 	//init model
-	quadvao := GenVertexArray()
+	quadvao := gl2.GenVertexArray()
 	quadvao.Bind()
 	defer quadvao.Unbind()
 
-	vertpos := GenBuffer()
+	vertpos := gl2.GenBuffer()
 	vertpos.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, len(_quadvertpos)*2*4, ptr(_quadvertpos), gl.STATIC_DRAW)
 
-	vertuv := GenBuffer()
+	vertuv := gl2.GenBuffer()
 	vertuv.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, len(_quadvertuv)*2*4, ptr(_quadvertuv), gl.STATIC_DRAW)
 
@@ -36,17 +37,17 @@ func InitPostProcessSystem() {
 //PostProcessFramebufferer is an interface to represent a single PostProcess effect.
 type PostProcessFramebufferer interface {
 	PreRender()
-	Render(Texture2D)
+	Render(gl2.Texture2D)
 	SetNext(PostProcessFramebufferer)
 }
 
 //PostProcessFramebuffer is the generic post process framebuffer
 type PostProcessFramebuffer struct {
-	Fb           Framebuffer
-	Tex          Texture2D
-	Prog         Program
+	Fb           gl2.Framebuffer
+	Tex          gl2.Texture2D
+	Prog         gl2.Program
 	next         PostProcessFramebufferer
-	time, source UniformLocation
+	time, source gl2.UniformLocation
 }
 
 //NewPostProcessFramebuffer creates a new PostProcessFramebuffer and allocated all the ressources.
@@ -56,12 +57,12 @@ type PostProcessFramebuffer struct {
 //	-tex: sampler2D, the input texture to this post process pass
 func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*PostProcessFramebuffer, error) {
 	ppf := PostProcessFramebuffer{}
-	vs, err := CompileShader(_fullscreenVertexShader, VertexShader)
+	vs, err := CompileShader(_fullscreenVertexShader, gl2.VertexShader)
 	if err != nil {
 		return &ppf, err
 	}
 	defer vs.Delete()
-	fs, err := CompileShader(fragmentSource, FragmentShader)
+	fs, err := CompileShader(fragmentSource, gl2.FragmentShader)
 	if err != nil {
 		return &ppf, err
 	}
@@ -79,14 +80,14 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 
 	ppf.time = prog.GetUniformLocation("time")
 
-	ppf.Fb = GenFramebuffer()
+	ppf.Fb = gl2.GenFramebuffer()
 	ppf.Tex = GenRGBTexture2D(width, height)
 
-	ppf.Fb.Bind()
-	defer ppf.Fb.Unbind()
+	ppf.Fb.Bind(gl2.ReadDrawFramebuffer)
+	defer ppf.Fb.Unbind(gl2.ReadDrawFramebuffer)
 
-	ppf.Fb.Texture(ReadDrawFramebuffer, ColorAttachement0, ppf.Tex, 0)
-	ppf.Fb.DrawBuffers(ColorAttachement0)
+	ppf.Fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, ppf.Tex, 0)
+	ppf.Fb.DrawBuffers(gl2.ColorAttachement0)
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		return &ppf, errors.New("framebuffer incomplete")
@@ -97,7 +98,7 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 //PreRender binds either the next post process fbo if there is one or unbinds any fbo to render to screen. Also disable depth test.
 func (ppfb *PostProcessFramebuffer) PreRender() {
 	if ppfb.next != nil {
-		ppfb.Fb.Bind()
+		ppfb.Fb.Bind(gl2.ReadDrawFramebuffer)
 	} else {
 		gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 	}
@@ -110,13 +111,13 @@ func (ppfb *PostProcessFramebuffer) PostRender() {
 }
 
 //Render takes a texture and feed it to the fragment shader as a fullscreen texture. It will call the next post process pass if there is one.
-func (ppfb *PostProcessFramebuffer) Render(t Texture2D) {
+func (ppfb *PostProcessFramebuffer) Render(t gl2.Texture2D) {
 	ppfb.Prog.Use()
 	ppfb.time.Uniform1f(float32(glfw.GetTime()))
 
-	gl.ActiveTexture(TextureUnitDiffuse)
+	gl.ActiveTexture(gl2.TextureUnitDiffuse)
 	t.Bind()
-	ppfb.source.Uniform1i(TextureUniformDiffuse)
+	ppfb.source.Uniform1i(gl2.TextureUniformDiffuse)
 	Fstri()
 	if ppfb.next != nil {
 		ppfb.next.PreRender()

@@ -2,12 +2,13 @@ package lux
 
 import (
 	"io/ioutil"
+	"luxengine.net/gl"
 )
 
 //RenderProgram is the lux representation of a OpenGL program vertex-fragment along with all the common uniforms. This may get
 type RenderProgram struct {
-	Prog                            Program
-	M, V, P, Diffuse, Light, N, Eye UniformLocation
+	Prog                            gl.Program
+	M, V, P, Diffuse, Light, N, Eye gl.UniformLocation
 }
 
 //LoadProgram loads a vertex-fragment program and gathers:
@@ -26,12 +27,12 @@ func LoadProgram(vertexfile, fragfile string) (out RenderProgram, err error) {
 	if err != nil {
 		return
 	}
-	vs, err := CompileShader(string(vssource)+"\x00", VertexShader)
+	vs, err := CompileShader(string(vssource)+"\x00", gl.VertexShader)
 	defer vs.Delete()
 	if err != nil {
 		return
 	}
-	fs, err := CompileShader(string(fssource)+"\x00", FragmentShader)
+	fs, err := CompileShader(string(fssource)+"\x00", gl.FragmentShader)
 	defer fs.Delete()
 	if err != nil {
 		return

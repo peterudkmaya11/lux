@@ -6,12 +6,13 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	gl2 "luxengine.net/gl"
 	"os"
 	"unsafe"
 )
 
 //SaveTexture2D take a Texture2D and a filename and saves it as a png image.
-func SaveTexture2D(t Texture2D, filename string) error {
+func SaveTexture2D(t gl2.Texture2D, filename string) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
 	defer file.Close()
 	if err != nil {
@@ -39,6 +40,13 @@ func SaveTexture2D(t Texture2D, filename string) error {
 	}
 	png.Encode(file, nrgba)
 	return nil
+}
+
+//GetCurrentTexture2D returns the currently bound texture2D, or 0 is none is bound
+func GetCurrentTexture2D() gl2.Texture2D {
+	whichID := int32(0)
+	gl.GetIntegerv(gl.TEXTURE_BINDING_2D, &whichID)
+	return gl2.Texture2D(whichID)
 }
 
 /*

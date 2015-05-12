@@ -3,44 +3,45 @@ package lux
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
+	gl2 "luxengine.net/gl"
 )
 
 //GBuffer is lux implementation of a geometry buffer for defered rendering
 type GBuffer struct {
-	framebuffer                                  Framebuffer
-	program                                      Program
-	PUni, VUni, MUni, NUni, MVPUni, DiffuseUni   UniformLocation
-	DiffuseTex, NormalTex, PositionTex, DepthTex Texture2D
+	framebuffer                                  gl2.Framebuffer
+	program                                      gl2.Program
+	PUni, VUni, MUni, NUni, MVPUni, DiffuseUni   gl2.UniformLocation
+	DiffuseTex, NormalTex, PositionTex, DepthTex gl2.Texture2D
 	AggregateFramebuffer                         AggregateFB
 	vp, view                                     glm.Mat4
 	width, height                                int32
 	//shadow
-	ShadowMapUni, ShadowMatUni UniformLocation
+	ShadowMapUni, ShadowMatUni gl2.UniformLocation
 	//lights
-	NumPointLightUni, PointLightPosUni, PointLightColUni UniformLocation
+	NumPointLightUni, PointLightPosUni, PointLightColUni gl2.UniformLocation
 	//View uniforms
-	CamPosUni UniformLocation
+	CamPosUni gl2.UniformLocation
 	//cook torrance
-	CookRoughnessValue, CookF0, CookK UniformLocation
+	CookRoughnessValue, CookF0, CookK gl2.UniformLocation
 }
 
 //AggregateFB is the FBO used to aggregate all the textures that the geometry shader built.
 type AggregateFB struct {
-	framebuffer                          Framebuffer
-	program                              Program
-	DiffUni, NormalUni, PosUni, DepthUni UniformLocation
-	Out                                  Texture2D
+	framebuffer                          gl2.Framebuffer
+	program                              gl2.Program
+	DiffUni, NormalUni, PosUni, DepthUni gl2.UniformLocation
+	Out                                  gl2.Texture2D
 }
 
 //NewGBuffer will create a new geometry buffer and allocate all the resources required
 func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.width, gbuffer.height = width, height
-	fb := GenFramebuffer()
-	fb.Bind()
-	defer fb.Unbind()
+	fb := gl2.GenFramebuffer()
+	fb.Bind(gl2.ReadDrawFramebuffer)
+	defer fb.Unbind(gl2.ReadDrawFramebuffer)
 	gbuffer.framebuffer = fb
 
-	depthtex := GenTexture2D()
+	depthtex := gl2.GenTexture2D()
 	depthtex.Bind()
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
@@ -48,7 +49,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, width, height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, nil)
 
-	diffuseTex := GenTexture2D()
+	diffuseTex := gl2.GenTexture2D()
 	diffuseTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -56,7 +57,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
 
-	normalTex := GenTexture2D()
+	normalTex := gl2.GenTexture2D()
 	normalTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -64,7 +65,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
 
-	positionTex := GenTexture2D()
+	positionTex := gl2.GenTexture2D()
 	positionTex.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -72,23 +73,23 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
 
-	fb.DrawBuffers(ColorAttachement0, ColorAttachement1, ColorAttachement2)
+	fb.DrawBuffers(gl2.ColorAttachement0, gl2.ColorAttachement1, gl2.ColorAttachement2)
 
-	fb.Texture(ReadDrawFramebuffer, ColorAttachement0, diffuseTex, 0 /*level*/)
-	fb.Texture(ReadDrawFramebuffer, ColorAttachement1, normalTex, 0 /*level*/)
-	fb.Texture(ReadDrawFramebuffer, ColorAttachement2, positionTex, 0 /*level*/)
-	fb.Texture(ReadDrawFramebuffer, DepthStencilAttachement, depthtex, 0 /*level*/)
+	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, diffuseTex, 0 /*level*/)
+	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement1, normalTex, 0 /*level*/)
+	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement2, positionTex, 0 /*level*/)
+	fb.Texture(gl2.ReadDrawFramebuffer, gl2.DepthStencilAttachement, depthtex, 0 /*level*/)
 
 	gbuffer.DiffuseTex = diffuseTex
 	gbuffer.NormalTex = normalTex
 	gbuffer.PositionTex = positionTex
 	gbuffer.DepthTex = depthtex
 
-	vs, err := CompileShader(_gbufferVertexShaderSource, VertexShader)
+	vs, err := CompileShader(_gbufferVertexShaderSource, gl2.VertexShader)
 	if err != nil {
 		return
 	}
-	fs, err := CompileShader(_gbufferFragmentShaderSource, FragmentShader)
+	fs, err := CompileShader(_gbufferFragmentShaderSource, gl2.FragmentShader)
 	if err != nil {
 		return
 	}
@@ -116,11 +117,11 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb := AggregateFB{}
 	gbuffer.AggregateFramebuffer = aggfb
 
-	avs, err := CompileShader(_fullscreenVertexShader, VertexShader)
+	avs, err := CompileShader(_fullscreenVertexShader, gl2.VertexShader)
 	if err != nil {
 		return
 	}
-	afs, err := CompileShader(_gbufferAggregateFragmentShader, FragmentShader)
+	afs, err := CompileShader(_gbufferAggregateFragmentShader, gl2.FragmentShader)
 	if err != nil {
 		return
 	}
@@ -130,10 +131,10 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	}
 	aggfb.program = aprog
 
-	aggfb.framebuffer = GenFramebuffer()
-	aggfb.framebuffer.Bind()
+	aggfb.framebuffer = gl2.GenFramebuffer()
+	aggfb.framebuffer.Bind(gl2.ReadDrawFramebuffer)
 
-	aggfb.Out = GenTexture2D()
+	aggfb.Out = gl2.GenTexture2D()
 	aggfb.Out.Bind()
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -158,8 +159,8 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.CookF0 = aprog.GetUniformLocation("F0")
 	gbuffer.CookK = aprog.GetUniformLocation("k")
 
-	aggfb.framebuffer.DrawBuffers(ColorAttachement0)
-	aggfb.framebuffer.Texture(ReadDrawFramebuffer, ColorAttachement0, aggfb.Out, 0)
+	aggfb.framebuffer.DrawBuffers(gl2.ColorAttachement0)
+	aggfb.framebuffer.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, aggfb.Out, 0)
 
 	gbuffer.AggregateFramebuffer = aggfb
 	return
@@ -167,7 +168,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 
 //Bind binds the FBO and calcualte view-projection.
 func (gb *GBuffer) Bind(cam *Camera) {
-	gb.framebuffer.Bind()
+	gb.framebuffer.Bind(gl2.ReadDrawFramebuffer)
 	gb.program.Use()
 
 	gb.vp = cam.Projection.Mul4(cam.View)
@@ -179,7 +180,7 @@ func (gb *GBuffer) Bind(cam *Camera) {
 }
 
 //Render will render the mesh in the different textures. No lighting calculation is performed here.
-func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
+func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex gl2.Texture2D, t *Transform) {
 
 	model := t.Mat4()
 	mvp := gb.vp.Mul4(model)
@@ -190,17 +191,17 @@ func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex Texture2D, t *Transform) {
 	normal := model.Inv()
 	gb.NUni.UniformMatrix4fv(1, true, &normal[0])
 
-	gl.ActiveTexture(TextureUnitDiffuse)
+	gl.ActiveTexture(gl2.TextureUnitDiffuse)
 	tex.Bind()
-	gb.DiffuseUni.Uniform1i(TextureUniformDiffuse)
+	gb.DiffuseUni.Uniform1i(gl2.TextureUniformDiffuse)
 
 	mesh.Bind()
 	mesh.DrawCall()
 }
 
 //Aggregate performs the lighting calculation per pixel. This is essentially a special post process pass.
-func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex Texture2D, f1, f2, f3 float32) {
-	gb.AggregateFramebuffer.framebuffer.Bind()
+func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex gl2.Texture2D, f1, f2, f3 float32) {
+	gb.AggregateFramebuffer.framebuffer.Bind(gl2.ReadDrawFramebuffer)
 
 	gb.AggregateFramebuffer.program.Use()
 
