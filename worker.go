@@ -11,7 +11,7 @@ type Agent struct {
 
 func (agent Agent) Seppuku() {
 	agent.manager.lock.Lock()
-	close(agent.death)
+	agent.death <- struct{}{}
 	agent.manager.numAgents--
 	agent.manager.lock.Unlock()
 }
