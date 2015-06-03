@@ -4,7 +4,19 @@ import (
 	"sync"
 )
 
-//AgentManager is a struct to manage and synchronize all the Agents
+type Agent struct {
+	death   chan struct{}
+	manager *AgentManager
+}
+
+func (agent Agent) Seppuku() {
+	agent.manager.lock.Lock()
+	close(agent.death)
+	agent.manager.numAgents--
+	agent.manager.lock.Unlock()
+}
+
+//AgentManager is a struct to manage and synchronize all the Agents.
 type AgentManager struct {
 	numAgents int
 	ticker    chan chan struct{}
@@ -12,7 +24,7 @@ type AgentManager struct {
 	lock      sync.Mutex
 }
 
-//NewAgentManager create an AgentManager and initialize all required values
+//NewAgentManager create an AgentManager and initialize all required values.
 func NewAgentManager() *AgentManager {
 	out := AgentManager{
 		numAgents: 0,
@@ -28,29 +40,40 @@ func (am *AgentManager) Tick() {
 	tick := make(chan struct{})
 	am.lock.Lock()
 	am.wg.Add(am.numAgents)
+	D("4 ", am.numAgents)
 	for x := 0; x < am.numAgents; x++ {
 		am.ticker <- tick
 	}
+	D("5")
 	am.lock.Unlock()
 	close(tick)
 	am.wg.Wait()
 }
 
 //NewAgent starts a goroutine that will run callback every frame until it returns false, it will then die.
-func (am *AgentManager) NewAgent(callback func() bool) {
+func (am *AgentManager) NewAgent(callback func() bool) Agent {
 	am.lock.Lock()
 	am.numAgents++
 	am.lock.Unlock()
+	agent := Agent{
+		death:   make(chan struct{}),
+		manager: am,
+	}
 	go func() {
 		for {
-			tick := <-am.ticker
-			<-tick
-			docontinue := callback()
-			am.wg.Done()
-			if docontinue {
-				continue
+			select {
+			case tick := <-am.ticker:
+				<-tick //wait for signal to start working
+				docontinue := callback()
+				am.wg.Done()
+				if docontinue {
+					continue
+				}
+				return
+			case <-agent.death:
+				return
 			}
-			return
 		}
 	}()
+	return agent
 }
