@@ -23,6 +23,15 @@ func SetContext() {
 	glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
 }
 
+func headlessContext() {
+	glfw.WindowHint(glfw.ContextVersionMajor, 3)
+	glfw.WindowHint(glfw.ContextVersionMinor, 3)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)    // Necessary for OS X
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile) // Necessary for OS X
+	glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
+	glfw.WindowHint(glfw.Visible, glfw.False)
+}
+
 func glbs() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
@@ -50,6 +59,21 @@ func CreateWindow(width, height int, title string, fullscreen bool) (window *glf
 		x = glfw.GetPrimaryMonitor()
 	}
 	window, err := glfw.CreateWindow(width, height, title, x, nil)
+	if err != nil {
+		panic(err)
+	}
+	window.MakeContextCurrent()
+	letsglowLETSGLOW()
+	glbs()
+	QueryExtentions()
+	return
+}
+
+//StartHeadless will initialize everything but wont actually create a window, so you can test your application.
+func StartHeadless() (window *glfw.Window) {
+	var err error
+	headlessContext()
+	window, err = glfw.CreateWindow(1, 1, "", nil, nil)
 	if err != nil {
 		panic(err)
 	}

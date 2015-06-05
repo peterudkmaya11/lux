@@ -40,11 +40,9 @@ func (am *AgentManager) Tick() {
 	tick := make(chan struct{})
 	am.lock.Lock()
 	am.wg.Add(am.numAgents)
-	D("4 ", am.numAgents)
 	for x := 0; x < am.numAgents; x++ {
 		am.ticker <- tick
 	}
-	D("5")
 	am.lock.Unlock()
 	close(tick)
 	am.wg.Wait()
@@ -69,6 +67,9 @@ func (am *AgentManager) NewAgent(callback func() bool) Agent {
 				if docontinue {
 					continue
 				}
+				am.lock.Lock()
+				am.numAgents--
+				am.lock.Unlock()
 				return
 			case <-agent.death:
 				return
@@ -76,4 +77,8 @@ func (am *AgentManager) NewAgent(callback func() bool) Agent {
 		}
 	}()
 	return agent
+}
+
+func (am *AgentManager) AgentCount() int {
+	return am.numAgents
 }

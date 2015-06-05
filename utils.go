@@ -34,7 +34,7 @@ func NewProgram(shaders ...Shader) (gl2.Program, error) {
 //MustNotGLError will check opengl for error and panic if one was generated
 func MustNotGLError() {
 	if err := gl.GetError(); err != gl.NO_ERROR {
-		log.Fatal(GLErrorToString(err))
+		log.Panic(GLErrorToString(err))
 	}
 }
 
