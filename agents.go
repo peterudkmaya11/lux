@@ -4,19 +4,21 @@ import (
 	"sync"
 )
 
+// Agent is the handle to control a tickable agent.
 type Agent struct {
 	death   chan struct{}
 	manager *AgentManager
 }
 
-func (agent Agent) Seppuku() {
-	agent.manager.lock.Lock()
-	agent.death <- struct{}{}
-	agent.manager.numAgents--
-	agent.manager.lock.Unlock()
+// Seppuku kills this agent.
+func (a *Agent) Seppuku() {
+	a.manager.lock.Lock()
+	a.death <- struct{}{}
+	a.manager.numAgents--
+	a.manager.lock.Unlock()
 }
 
-//AgentManager is a struct to manage and synchronize all the Agents.
+// AgentManager is a struct to manage and synchronize all the Agents.
 type AgentManager struct {
 	numAgents int
 	ticker    chan chan struct{}
@@ -24,19 +26,18 @@ type AgentManager struct {
 	lock      sync.Mutex
 }
 
-//NewAgentManager create an AgentManager and initialize all required values.
+// NewAgentManager create an AgentManager and initialize all required values.
 func NewAgentManager() *AgentManager {
-	out := AgentManager{
-		numAgents: 0,
-		ticker:    make(chan chan struct{}),
-		wg:        sync.WaitGroup{},
-		lock:      sync.Mutex{},
+	return &AgentManager{
+		ticker: make(chan chan struct{}),
 	}
-	return &out
 }
 
-//Tick will notify every agent that they need to execute their callback.
+// Tick will notify every agent that they need to execute their callback.
 func (am *AgentManager) Tick() {
+	if am.numAgents == 0 {
+		return
+	}
 	tick := make(chan struct{})
 	am.lock.Lock()
 	am.wg.Add(am.numAgents)
@@ -48,37 +49,43 @@ func (am *AgentManager) Tick() {
 	am.wg.Wait()
 }
 
-//NewAgent starts a goroutine that will run callback every frame until it returns false, it will then die.
-func (am *AgentManager) NewAgent(callback func() bool) Agent {
+// NewAgent starts a goroutine that will run callback every frame until it returns false, it will then die.
+func (am *AgentManager) NewAgent(callback func() bool) *Agent {
 	am.lock.Lock()
-	am.numAgents++
-	am.lock.Unlock()
+
 	agent := Agent{
 		death:   make(chan struct{}),
 		manager: am,
 	}
+
 	go func() {
 		for {
 			select {
 			case tick := <-am.ticker:
-				<-tick //wait for signal to start working
+				<-tick // Wait for signal to start working
 				docontinue := callback()
-				am.wg.Done()
-				if docontinue {
-					continue
+				if !docontinue {
+					am.lock.Lock()
+					am.numAgents--
+					am.lock.Unlock()
+					am.wg.Done()
+					return
 				}
-				am.lock.Lock()
-				am.numAgents--
-				am.lock.Unlock()
-				return
 			case <-agent.death:
 				return
 			}
+			am.wg.Done()
 		}
 	}()
-	return agent
+
+	am.numAgents++
+
+	am.lock.Unlock()
+
+	return &agent
 }
 
+// AgentCount return the number of active agent.
 func (am *AgentManager) AgentCount() int {
 	return am.numAgents
 }

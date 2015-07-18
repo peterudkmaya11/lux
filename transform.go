@@ -57,3 +57,7 @@ func (t *Transform) Iden() {
 func (t *Transform) Mat4() glm.Mat4 {
 	return t.LocalToWorld
 }
+
+func (t *Transform) SetMatrix(m *[16]float32) {
+	t.LocalToWorld = (glm.Mat4)(*m)
+}

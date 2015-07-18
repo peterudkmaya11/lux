@@ -44,7 +44,7 @@ func TestAgentSeppuku(t *testing.T) {
 	select {
 	case <-ping:
 		t.Error(errors.New("there the agent should not have executed"))
-	case <-time.After(20 * time.Millisecond):
+	case <-time.After(100 * time.Millisecond):
 		break
 	}
 
@@ -55,7 +55,7 @@ func TestAgentNaturalDeath(t *testing.T) {
 	countdown := 2
 	am.NewAgent(func() bool {
 		countdown--
-		return countdown == 0
+		return countdown != 0
 	})
 	am.Tick()
 	am.Tick()

@@ -17,12 +17,12 @@ type ParticleSystem struct {
 	currentVB, currentTFB   int
 	particles               []Particle
 	time                    float64
-	gDeltaTimeMillis        gl2.UniformLocation1f
-	gTime                   gl2.UniformLocation1f
-	gRandomTexture          gl2.UniformLocation1i
-	gLauncherLifetime       gl2.UniformLocation1f
-	gShellLifetime          gl2.UniformLocation1f
-	gSecondaryShellLifetime gl2.UniformLocation1f
+	gDeltaTimeMillis        gl2.UniformLocation
+	gTime                   gl2.UniformLocation
+	gRandomTexture          gl2.UniformLocation
+	gLauncherLifetime       gl2.UniformLocation
+	gShellLifetime          gl2.UniformLocation
+	gSecondaryShellLifetime gl2.UniformLocation
 }
 
 type Particle struct {
@@ -71,12 +71,12 @@ func NewParticleSystem(position, direction glm.Vec3, size int) *ParticleSystem {
 		gl.GetProgramInfoLog(uint32(ps.program), logLength, nil, gl.Str(log))
 	}
 
-	ps.gDeltaTimeMillis = ps.program.GetUniformLocation("gDeltaTimeMillis").To1f()
-	ps.gTime = ps.program.GetUniformLocation("gTime").To1f()
-	ps.gRandomTexture = ps.program.GetUniformLocation("gRandomTexture").To1i()
-	ps.gLauncherLifetime = ps.program.GetUniformLocation("gLauncherLifetime").To1f()
-	ps.gShellLifetime = ps.program.GetUniformLocation("gShellLifetime").To1f()
-	ps.gSecondaryShellLifetime = ps.program.GetUniformLocation("gSecondaryShellLifetime").To1f()
+	ps.gDeltaTimeMillis = ps.program.GetUniformLocation("gDeltaTimeMillis")
+	ps.gTime = ps.program.GetUniformLocation("gTime")
+	ps.gRandomTexture = ps.program.GetUniformLocation("gRandomTexture")
+	ps.gLauncherLifetime = ps.program.GetUniformLocation("gLauncherLifetime")
+	ps.gShellLifetime = ps.program.GetUniformLocation("gShellLifetime")
+	ps.gSecondaryShellLifetime = ps.program.GetUniformLocation("gSecondaryShellLifetime")
 
 	ps.particles[0].Lifetime = 0
 	ps.particles[0].Position = position
