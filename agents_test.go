@@ -63,3 +63,21 @@ func TestAgentNaturalDeath(t *testing.T) {
 		t.Error(errors.New("agent still alive"))
 	}
 }
+
+func TestAgentSleep(t *testing.T) {
+	/*am := NewAgentManager()
+	var count int
+	a := am.NewAgent(func() bool {
+		count++
+		return true
+	})
+	am.Tick()
+	a.Sleep()
+	am.Tick()
+	a.Awake()
+	am.Tick()
+
+	if count != 2 {
+		t.Errorf("count was not 2")
+	}*/
+}

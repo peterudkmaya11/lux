@@ -238,9 +238,10 @@ func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.M
 		plightcol[i] = light.G
 		plightcol[i] = light.B
 	}
-	gb.PointLightPosUni.Uniform3fv(int32(len(plights)), &plightpos[0])
-	gb.PointLightColUni.Uniform3fv(int32(len(plights)), &plightcol[0])
-
+	if len(plights) != 0 {
+		gb.PointLightPosUni.Uniform3fv(int32(len(plights)), &plightpos[0])
+		gb.PointLightColUni.Uniform3fv(int32(len(plights)), &plightcol[0])
+	}
 	gb.CamPosUni.Uniform3fv(1, &cam.Pos[0])
 
 	//=====shadow=====//
@@ -277,6 +278,7 @@ void main() {
 
 var _gbufferFragmentShaderSource = `
 #version 330
+
 uniform sampler2D diffuse;
 uniform mat4 N;
 
@@ -297,6 +299,7 @@ void main() {
 var _gbufferAggregateFragmentShader = `
 #version 330
 #define MAX_POINT_LIGHT 8
+#define MIN_LUX 0.3
 
 //GBuffer textures
 uniform sampler2D diffusetex;
@@ -362,6 +365,9 @@ void main(){
 			specular = (fresnel*geoAtt*roughness)/(NdV*NdL*3.14);
 		}
 		lux=NdL * (k + specular * (1.0 - k));
+	}
+	if(lux < MIN_LUX){
+		lux=MIN_LUX;
 	}
 	outColor = texture(diffusetex, uv)*lux;
 }

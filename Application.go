@@ -33,8 +33,8 @@ func headlessContext() {
 }
 
 func glbs() {
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
+	//gl.Enable(gl.DEPTH_TEST)
+	//gl.DepthFunc(gl.LESS)
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Enable(gl.CULL_FACE)
 }

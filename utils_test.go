@@ -14,8 +14,9 @@ const (
 )
 
 type MainThreadTest struct {
-	T  *testing.T
-	ID int
+	T *testing.T
+	F func(*testing.T)
+	R chan struct{}
 }
 
 func TestMain(m *testing.M) {
@@ -24,28 +25,11 @@ func TestMain(m *testing.M) {
 	//this needs to happen in main thread
 	InitGLFW()
 	_ = StartHeadless()
-	go func() {
-		m.Run()
-		close(testchan)
-	}()
-	for t := range testchan {
-		switch t.ID {
-		case mustnotglerror:
-			testMustNotGLError(t.T)
-		}
-	}
-	MustNotGLError()
+	m.Run()
 	TerminateGLFW()
 }
 
 func TestMustNotGLError(t *testing.T) {
-	testchan <- MainThreadTest{
-		T:  t,
-		ID: mustnotglerror,
-	}
-}
-
-func testMustNotGLError(t *testing.T) {
 	gl.Enable(gl.DEPTH_TEST)
 	MustNotGLError()
 }
