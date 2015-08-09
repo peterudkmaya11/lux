@@ -14,6 +14,7 @@ Features:
 * [Wrapper](https://github.com/luxengine/gobullet) for Bullet physics engine. Make giant towers of block then throw massive, heavy balls at it and watch it fall.
 * native float32 [math library](https://github.com/luxengine/math). Because `   vec[0], vec[1], vec[2]` is prettier than `float64(vec[0]), float64(vec[1]), float64(vec[2])`
 * Faster and memory friendly [matrix library](https://github.com/luxengine/glm)! go-gl mgl32 is good but sloooooooowwww, also it allocates a lot of memory.
+* OpenCL wrapper and abstraction layer. Because sometimes we need to calculate stuff REALLY FREACKING FAST!
 * Image postprocessing pipeline. We have some predefined shaders. eg: cel-shading, fxaa, color manipulation, etc
 * Forward or Defered shading. Pick whichever you like best.
 * Basic shadow mapping.
