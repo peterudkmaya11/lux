@@ -30,6 +30,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestMustNotGLError(t *testing.T) {
+	t.Skip()
 	gl.Enable(gl.DEPTH_TEST)
 	MustNotGLError()
 }
