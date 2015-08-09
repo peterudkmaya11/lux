@@ -28,6 +28,7 @@ WIP:
 * Steam wrapper. I'm REALLY hyped for the steam controllers.
 * Open source solution for UI (preferably html).
 * Solution for testing using go framework. Those who tried will quickly realise that every test run in it's own goroutine and that `runtime.LockOsThread` and `TestMain` don't help.
+* Scene manager solution. This will most likely be integrated/based on the same stuff Bullet is.
 
 Future work:
 * Support for [Vulkan](https://www.khronos.org/vulkan)
