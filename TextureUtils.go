@@ -3,9 +3,9 @@ package lux
 import (
 	"fmt" //error
 	"github.com/go-gl/gl/v3.3-core/gl"
+	gl2 "github.com/luxengine/gl"
 	"image"
 	"image/draw"
-	gl2 "luxengine.net/gl"
 	"os"
 )
 

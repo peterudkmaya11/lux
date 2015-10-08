@@ -1,5 +1,5 @@
 #Install
-`go get luxengine.net/lux`
+`go get github.com/luxengine/lux`
 
 #development
 Currently on hold waiting to for algorithms in the physics engine. HOWEVER, if you want to use this lib but you're missing something. TELL ME!!, ill bring it up my priority list.

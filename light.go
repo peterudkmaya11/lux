@@ -1,7 +1,7 @@
 package lux
 
 import (
-	"luxengine.net/gl"
+	"github.com/luxengine/gl"
 )
 
 //Light is the interface that group all the common light operations.

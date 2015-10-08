@@ -3,10 +3,10 @@ package lux
 import (
 	"fmt"
 	"github.com/go-gl/gl/v3.3-core/gl"
+	gl2 "github.com/luxengine/gl"
 	"image"
 	"image/color"
 	"image/png"
-	gl2 "luxengine.net/gl"
 	"os"
 	"unsafe"
 )

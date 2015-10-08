@@ -1,8 +1,8 @@
 package lux
 
 import (
+	"github.com/luxengine/gl"
 	"io/ioutil"
-	"luxengine.net/gl"
 )
 
 //RenderProgram is the lux representation of a OpenGL program vertex-fragment along with all the common uniforms. This may get

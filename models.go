@@ -3,8 +3,8 @@ package lux
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
-	gl2 "luxengine.net/gl"
-	"luxengine.net/lux/utils"
+	gl2 "github.com/luxengine/gl"
+	"github.com/luxengine/lux/utils"
 )
 
 //Mesh is an interface to represent any renderable mesh

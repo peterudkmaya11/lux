@@ -3,7 +3,7 @@ package terrain
 import (
 	"errors"
 	glm "github.com/go-gl/mathgl/mgl32"
-	"luxengine.net/lux"
+	"github.com/luxengine/lux"
 )
 
 //Will return a (n-2)(n-2) heightmap. We need the 4 adjacent vertices to accuratelly calculate normals.

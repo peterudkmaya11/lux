@@ -1,8 +1,8 @@
 package lux
 
 import (
+	"github.com/luxengine/gl"
 	"log"
-	"luxengine.net/gl"
 	"strings"
 )
 
