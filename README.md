@@ -1,3 +1,9 @@
+#Install
+`go get luxengine.net/lux`
+
+#development
+Currently on hold waiting to for algorithms in the physics engine. HOWEVER, if you want to use this lib but you're missing something. TELL ME!!, ill bring it up my priority list.
+
 #Lux  
 Lux is a 3D game engine written almost entirely in [Go](http://golang.org/). We aim to provide our users with powerfull and flexible tools to make games (and other 3D application too!).
 Every lines of code in Lux is coded with the following goal in mind:
