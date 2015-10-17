@@ -129,3 +129,32 @@ void main(){
 	outputColor=texture(tex,vec2(uv.x,1-uv.y));
 }
 ` + "\x00"
+
+// PostProcessFragmentShaderToneMapping is a tone mapping shader, needs to be used right after the GBuffer.
+var PostProcessFragmentShaderToneMapping = `#version 330
+uniform sampler2D tex;
+uniform vec2 resolution;
+uniform float time;
+in vec2 uv;
+layout (location=0) out vec4 outputColor;
+
+float luminance(vec3 color) {
+	return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+}
+
+vec3 tone(vec3 x) {
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+
+	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+
+void main(){
+	vec3 x = vec3(texture(tex,uv));
+	outputColor = vec4(tone(x*6), 1);
+}
+` + "\x00"

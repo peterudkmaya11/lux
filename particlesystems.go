@@ -47,17 +47,17 @@ func NewParticleSystem(position, direction glm.Vec3, size int) *ParticleSystem {
 	ps.isFirst = true
 
 	ps.program = gl2.CreateProgram()
-	vss, err := CompileShader(vs, gl2.VertexShader)
+	vss, err := CompileShader(vs, gl2.VERTEX_SHADER)
 	if err != nil {
 		D(err)
 	}
 	ps.program.AttachShader(vss.Loc)
-	gss, err := CompileShader(gs, gl2.GeometryShader)
+	gss, err := CompileShader(gs, gl2.GEOMETRY_SHADER)
 	if err != nil {
 		D(err)
 	}
 	ps.program.AttachShader(gss.Loc)
-	fss, err := CompileShader(fs, gl2.FragmentShader)
+	fss, err := CompileShader(fs, gl2.FRAGMENT_SHADER)
 	if err != nil {
 		D(err)
 	}

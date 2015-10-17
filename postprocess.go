@@ -57,12 +57,12 @@ type PostProcessFramebuffer struct {
 //	-tex: sampler2D, the input texture to this post process pass
 func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*PostProcessFramebuffer, error) {
 	ppf := PostProcessFramebuffer{}
-	vs, err := CompileShader(_fullscreenVertexShader, gl2.VertexShader)
+	vs, err := CompileShader(_fullscreenVertexShader, gl2.VERTEX_SHADER)
 	if err != nil {
 		return &ppf, err
 	}
 	defer vs.Delete()
-	fs, err := CompileShader(fragmentSource, gl2.FragmentShader)
+	fs, err := CompileShader(fragmentSource, gl2.FRAGMENT_SHADER)
 	if err != nil {
 		return &ppf, err
 	}
@@ -83,11 +83,11 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 	ppf.Fb = gl2.GenFramebuffer()
 	ppf.Tex = GenRGBTexture2D(width, height)
 
-	ppf.Fb.Bind(gl2.ReadDrawFramebuffer)
-	defer ppf.Fb.Unbind(gl2.ReadDrawFramebuffer)
+	ppf.Fb.Bind(gl2.FRAMEBUFFER)
+	defer ppf.Fb.Unbind(gl2.FRAMEBUFFER)
 
-	ppf.Fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, ppf.Tex, 0)
-	ppf.Fb.DrawBuffers(gl2.ColorAttachement0)
+	ppf.Fb.Texture(gl2.FRAMEBUFFER, gl2.COLOR_ATTACHMENT0, ppf.Tex, 0)
+	ppf.Fb.DrawBuffers(gl2.COLOR_ATTACHMENT0)
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		return &ppf, errors.New("framebuffer incomplete")
@@ -98,7 +98,7 @@ func NewPostProcessFramebuffer(width, height int32, fragmentSource string) (*Pos
 //PreRender binds either the next post process fbo if there is one or unbinds any fbo to render to screen. Also disable depth test.
 func (ppfb *PostProcessFramebuffer) PreRender() {
 	if ppfb.next != nil {
-		ppfb.Fb.Bind(gl2.ReadDrawFramebuffer)
+		ppfb.Fb.Bind(gl2.FRAMEBUFFER)
 	} else {
 		gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 	}
@@ -115,9 +115,9 @@ func (ppfb *PostProcessFramebuffer) Render(t gl2.Texture2D) {
 	ppfb.Prog.Use()
 	ppfb.time.Uniform1f(float32(glfw.GetTime()))
 
-	gl.ActiveTexture(gl2.TextureUnitDiffuse)
+	gl.ActiveTexture(gl2.TEXTURE0)
 	t.Bind()
-	ppfb.source.Uniform1i(gl2.TextureUniformDiffuse)
+	ppfb.source.Uniform1i(0)
 	Fstri()
 	if ppfb.next != nil {
 		ppfb.next.PreRender()

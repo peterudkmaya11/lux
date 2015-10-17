@@ -24,8 +24,8 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	fbo := gl2.GenFramebuffer()
 	sfbo.width, sfbo.height = width, height
 	sfbo.framebuffer = fbo
-	fbo.Bind(gl2.ReadDrawFramebuffer)
-	defer fbo.Unbind(gl2.ReadDrawFramebuffer)
+	fbo.Bind(gl2.FRAMEBUFFER)
+	defer fbo.Unbind(gl2.FRAMEBUFFER)
 
 	shadowtex := gl2.GenTexture2D()
 	sfbo.texture = shadowtex
@@ -39,21 +39,21 @@ func NewShadowFBO(width, height int32) (*ShadowFBO, error) {
 	shadowtex.TexParameteriv(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL)
 	shadowtex.TexImage2D(0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, nil)
 
-	fbo.Texture(gl2.ReadDrawFramebuffer, gl2.DepthAttachement, shadowtex, 0 /*level*/)
+	fbo.Texture(gl2.FRAMEBUFFER, gl2.DEPTH_ATTACHMENT, shadowtex, 0 /*level*/)
 
-	fbo.DrawBuffer(gl2.None)
-	fbo.ReadBuffer(gl2.None)
+	fbo.DrawBuffer(gl2.NONE)
+	fbo.ReadBuffer(gl2.NONE)
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		return &sfbo, errors.New("framebuffer incomplete")
 	}
 
-	vs, err := CompileShader(_shadowFboVertexShader, gl2.VertexShader)
+	vs, err := CompileShader(_shadowFboVertexShader, gl2.VERTEX_SHADER)
 	if err != nil {
 		return &sfbo, err
 	}
 	defer vs.Delete()
-	fs, err := CompileShader(_shadowFboFragmentShader, gl2.FragmentShader)
+	fs, err := CompileShader(_shadowFboFragmentShader, gl2.FRAGMENT_SHADER)
 	if err != nil {
 		return &sfbo, err
 	}
@@ -81,7 +81,7 @@ func (sfbo *ShadowFBO) LookAt(ex, ey, ez, tx, ty, tz float32) {
 
 //BindForDrawing binds this fbo, change face culling for back face, start using the shadow program, calculate projection and clears the texture.
 func (sfbo *ShadowFBO) BindForDrawing() {
-	sfbo.framebuffer.Bind(gl2.ReadDrawFramebuffer)
+	sfbo.framebuffer.Bind(gl2.FRAMEBUFFER)
 	sfbo.program.Use()
 	sfbo.vp = sfbo.projection.Mul4(sfbo.view)
 	gl.Clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
@@ -91,7 +91,7 @@ func (sfbo *ShadowFBO) BindForDrawing() {
 
 //Unbind return cull face to front and unbind this fbo.
 func (sfbo *ShadowFBO) Unbind() {
-	sfbo.framebuffer.Unbind(gl2.ReadDrawFramebuffer)
+	sfbo.framebuffer.Unbind(gl2.FRAMEBUFFER)
 	gl.CullFace(gl.BACK)
 }
 

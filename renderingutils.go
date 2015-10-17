@@ -27,12 +27,12 @@ func LoadProgram(vertexfile, fragfile string) (out RenderProgram, err error) {
 	if err != nil {
 		return
 	}
-	vs, err := CompileShader(string(vssource)+"\x00", gl.VertexShader)
+	vs, err := CompileShader(string(vssource)+"\x00", gl.VERTEX_SHADER)
 	defer vs.Delete()
 	if err != nil {
 		return
 	}
-	fs, err := CompileShader(string(fssource)+"\x00", gl.FragmentShader)
+	fs, err := CompileShader(string(fssource)+"\x00", gl.FRAGMENT_SHADER)
 	defer fs.Delete()
 	if err != nil {
 		return

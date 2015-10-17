@@ -1,8 +1,8 @@
 package lux
 
 import (
-	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/luxengine/gl"
 )
 
 //obvious ryze quote
@@ -35,8 +35,8 @@ func headlessContext() {
 func glbs() {
 	//gl.Enable(gl.DEPTH_TEST)
 	//gl.DepthFunc(gl.LESS)
-	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
-	gl.Enable(gl.CULL_FACE)
+	gl.ClearColor.Set(0.3, 0.3, 0.3, 1.0)
+	gl.CullFace.Enable()
 }
 
 //InitGLFW will call glfw.Init and panic if it fails

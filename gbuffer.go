@@ -37,59 +37,59 @@ type AggregateFB struct {
 func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.width, gbuffer.height = width, height
 	fb := gl2.GenFramebuffer()
-	fb.Bind(gl2.ReadDrawFramebuffer)
-	defer fb.Unbind(gl2.ReadDrawFramebuffer)
+	fb.Bind(gl2.FRAMEBUFFER)
+	defer fb.Unbind(gl2.FRAMEBUFFER)
 	gbuffer.framebuffer = fb
 
 	depthtex := gl2.GenTexture2D()
 	depthtex.Bind()
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, width, height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, nil)
+	depthtex.MinFilter(gl2.NEAREST)
+	depthtex.MagFilter(gl2.NEAREST)
+	depthtex.WrapS(gl2.CLAMP_TO_EDGE)
+	depthtex.WrapT(gl2.CLAMP_TO_EDGE)
+	depthtex.TexImage2D(0, gl2.DEPTH24_STENCIL8, width, height, 0, gl2.DEPTH_STENCIL, gl2.UNSIGNED_INT_24_8, nil)
 
 	diffuseTex := gl2.GenTexture2D()
 	diffuseTex.Bind()
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
+	diffuseTex.MinFilter(gl2.LINEAR)
+	diffuseTex.MagFilter(gl2.LINEAR)
+	diffuseTex.WrapS(gl2.CLAMP_TO_EDGE)
+	diffuseTex.WrapT(gl2.CLAMP_TO_EDGE)
+	diffuseTex.TexImage2D(0, gl2.RGB16F, width, height, 0, gl2.RGBA, gl2.FLOAT, nil)
 
 	normalTex := gl2.GenTexture2D()
 	normalTex.Bind()
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
+	normalTex.MinFilter(gl2.LINEAR)
+	normalTex.MagFilter(gl2.LINEAR)
+	normalTex.WrapS(gl2.CLAMP_TO_EDGE)
+	normalTex.WrapT(gl2.CLAMP_TO_EDGE)
+	normalTex.TexImage2D(0, gl2.RGB16F, width, height, 0, gl2.RGB, gl2.FLOAT, nil)
 
 	positionTex := gl2.GenTexture2D()
 	positionTex.Bind()
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGB, gl.FLOAT, nil)
+	positionTex.MinFilter(gl2.LINEAR)
+	positionTex.MagFilter(gl2.LINEAR)
+	positionTex.WrapS(gl2.CLAMP_TO_EDGE)
+	positionTex.WrapT(gl2.CLAMP_TO_EDGE)
+	positionTex.TexImage2D(0, gl2.RGB16F, width, height, 0, gl2.RGB, gl2.FLOAT, nil)
 
-	fb.DrawBuffers(gl2.ColorAttachement0, gl2.ColorAttachement1, gl2.ColorAttachement2)
+	fb.DrawBuffers(gl2.COLOR_ATTACHMENT0, gl2.COLOR_ATTACHMENT1, gl2.COLOR_ATTACHMENT2)
 
-	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, diffuseTex, 0 /*level*/)
-	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement1, normalTex, 0 /*level*/)
-	fb.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement2, positionTex, 0 /*level*/)
-	fb.Texture(gl2.ReadDrawFramebuffer, gl2.DepthStencilAttachement, depthtex, 0 /*level*/)
+	fb.Texture(gl2.FRAMEBUFFER, gl2.COLOR_ATTACHMENT0, diffuseTex, 0 /*level*/)
+	fb.Texture(gl2.FRAMEBUFFER, gl2.COLOR_ATTACHMENT1, normalTex, 0 /*level*/)
+	fb.Texture(gl2.FRAMEBUFFER, gl2.COLOR_ATTACHMENT2, positionTex, 0 /*level*/)
+	fb.Texture(gl2.FRAMEBUFFER, gl2.DEPTH_STENCIL_ATTACHMENT, depthtex, 0 /*level*/)
 
 	gbuffer.DiffuseTex = diffuseTex
 	gbuffer.NormalTex = normalTex
 	gbuffer.PositionTex = positionTex
 	gbuffer.DepthTex = depthtex
 
-	vs, err := CompileShader(_gbufferVertexShaderSource, gl2.VertexShader)
+	vs, err := CompileShader(_gbufferVertexShaderSource, gl2.VERTEX_SHADER)
 	if err != nil {
 		return
 	}
-	fs, err := CompileShader(_gbufferFragmentShaderSource, gl2.FragmentShader)
+	fs, err := CompileShader(_gbufferFragmentShaderSource, gl2.FRAGMENT_SHADER)
 	if err != nil {
 		return
 	}
@@ -117,11 +117,11 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb := AggregateFB{}
 	gbuffer.AggregateFramebuffer = aggfb
 
-	avs, err := CompileShader(_fullscreenVertexShader, gl2.VertexShader)
+	avs, err := CompileShader(_fullscreenVertexShader, gl2.VERTEX_SHADER)
 	if err != nil {
 		return
 	}
-	afs, err := CompileShader(_gbufferAggregateFragmentShader, gl2.FragmentShader)
+	afs, err := CompileShader(_gbufferAggregateFragmentShader, gl2.FRAGMENT_SHADER)
 	if err != nil {
 		return
 	}
@@ -132,15 +132,15 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	aggfb.program = aprog
 
 	aggfb.framebuffer = gl2.GenFramebuffer()
-	aggfb.framebuffer.Bind(gl2.ReadDrawFramebuffer)
+	aggfb.framebuffer.Bind(gl2.FRAMEBUFFER)
 
 	aggfb.Out = gl2.GenTexture2D()
 	aggfb.Out.Bind()
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, nil)
+	aggfb.Out.MinFilter(gl2.LINEAR)
+	aggfb.Out.MagFilter(gl2.LINEAR)
+	aggfb.Out.WrapS(gl2.CLAMP_TO_EDGE)
+	aggfb.Out.WrapT(gl2.CLAMP_TO_EDGE)
+	aggfb.Out.TexImage2D(0, gl2.RGBA16F, width, height, 0, gl2.RGB, gl2.FLOAT, nil)
 
 	aggfb.DiffUni = aprog.GetUniformLocation("diffusetex")
 	aggfb.NormalUni = aprog.GetUniformLocation("normaltex")
@@ -159,8 +159,8 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 	gbuffer.CookF0 = aprog.GetUniformLocation("F0")
 	gbuffer.CookK = aprog.GetUniformLocation("k")
 
-	aggfb.framebuffer.DrawBuffers(gl2.ColorAttachement0)
-	aggfb.framebuffer.Texture(gl2.ReadDrawFramebuffer, gl2.ColorAttachement0, aggfb.Out, 0)
+	aggfb.framebuffer.DrawBuffers(gl2.COLOR_ATTACHMENT0)
+	aggfb.framebuffer.Texture(gl2.FRAMEBUFFER, gl2.COLOR_ATTACHMENT0, aggfb.Out, 0)
 
 	gbuffer.AggregateFramebuffer = aggfb
 	return
@@ -168,7 +168,7 @@ func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
 
 //Bind binds the FBO and calcualte view-projection.
 func (gb *GBuffer) Bind(cam *Camera) {
-	gb.framebuffer.Bind(gl2.ReadDrawFramebuffer)
+	gb.framebuffer.Bind(gl2.FRAMEBUFFER)
 	gb.program.Use()
 
 	gb.vp = cam.Projection.Mul4(cam.View)
@@ -176,7 +176,7 @@ func (gb *GBuffer) Bind(cam *Camera) {
 
 	ViewportChange(gb.width, gb.height)
 
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+	gl.Clear(gl2.COLOR_BUFFER_BIT | gl2.DEPTH_BUFFER_BIT | gl2.STENCIL_BUFFER_BIT)
 }
 
 //Render will render the mesh in the different textures. No lighting calculation is performed here.
@@ -191,9 +191,9 @@ func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex gl2.Texture2D, t *Transfor
 	normal := model.Inv()
 	gb.NUni.UniformMatrix4fv(1, true, &normal[0])
 
-	gl.ActiveTexture(gl2.TextureUnitDiffuse)
+	gl.ActiveTexture(gl2.TEXTURE0)
 	tex.Bind()
-	gb.DiffuseUni.Uniform1i(gl2.TextureUniformDiffuse)
+	gb.DiffuseUni.Uniform1i(0)
 
 	mesh.Bind()
 	mesh.DrawCall()
@@ -201,7 +201,7 @@ func (gb *GBuffer) Render(cam *Camera, mesh Mesh, tex gl2.Texture2D, t *Transfor
 
 //Aggregate performs the lighting calculation per pixel. This is essentially a special post process pass.
 func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.Mat4, tex gl2.Texture2D, f1, f2, f3 float32) {
-	gb.AggregateFramebuffer.framebuffer.Bind(gl2.ReadDrawFramebuffer)
+	gb.AggregateFramebuffer.framebuffer.Bind(gl2.FRAMEBUFFER)
 
 	gb.AggregateFramebuffer.program.Use()
 
@@ -209,19 +209,19 @@ func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.M
 	gb.CookF0.Uniform1f(f2)
 	gb.CookK.Uniform1f(f3)
 
-	gl.ActiveTexture(gl.TEXTURE0)
+	gl.ActiveTexture(gl2.TEXTURE0)
 	gb.DiffuseTex.Bind()
 	gb.AggregateFramebuffer.DiffUni.Uniform1i(0)
 
-	gl.ActiveTexture(gl.TEXTURE1)
+	gl.ActiveTexture(gl2.TEXTURE1)
 	gb.NormalTex.Bind()
 	gb.AggregateFramebuffer.NormalUni.Uniform1i(1)
 
-	gl.ActiveTexture(gl.TEXTURE2)
+	gl.ActiveTexture(gl2.TEXTURE2)
 	gb.PositionTex.Bind()
 	gb.AggregateFramebuffer.PosUni.Uniform1i(2)
 
-	gl.ActiveTexture(gl.TEXTURE3)
+	gl.ActiveTexture(gl2.TEXTURE3)
 	gb.DepthTex.Bind()
 	gb.AggregateFramebuffer.DepthUni.Uniform1i(3)
 
@@ -245,7 +245,7 @@ func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.M
 	gb.CamPosUni.Uniform3fv(1, &cam.Pos[0])
 
 	//=====shadow=====//
-	gl.ActiveTexture(gl.TEXTURE4)
+	gl.ActiveTexture(gl2.TEXTURE4)
 	tex.Bind()
 	gb.ShadowMapUni.Uniform1i(4)
 
