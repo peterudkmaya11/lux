@@ -155,6 +155,6 @@ vec3 tone(vec3 x) {
 
 void main(){
 	vec3 x = vec3(texture(tex,uv));
-	outputColor = vec4(tone(x*6), 1);
+	outputColor = vec4(tone(x), 1);
 }
 ` + "\x00"

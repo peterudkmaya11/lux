@@ -35,6 +35,125 @@ type AggregateFB struct {
 
 //NewGBuffer will create a new geometry buffer and allocate all the resources required
 func NewGBuffer(width, height int32) (gbuffer GBuffer, err error) {
+	const (
+		_gbufferVertexShaderSource = `#version 330
+	uniform mat4 M;
+	uniform mat4 MVP;
+
+	layout (location=0) in vec3 vert;
+	layout (location=1) in vec2 vertTexCoord;
+	layout (location=2) in vec3 vertNormal;
+
+	out vec2 fragTexCoord;
+	out vec3 normal;
+	out vec3 world_pos;
+
+	void main() {
+		normal = vertNormal;
+		fragTexCoord = vertTexCoord;
+		world_pos=(M*vec4(vert,1)).xyz;
+		gl_Position = MVP * vec4(vert, 1);
+	}
+	` + "\x00"
+
+		_gbufferFragmentShaderSource = `
+	#version 330
+
+	uniform sampler2D diffuse;
+	uniform mat4 N;
+
+	in vec2 fragTexCoord;
+	in vec3 normal;
+	in vec3 world_pos;
+	layout (location=0) out vec3 outColor;
+	layout (location=1) out vec3 outNormal;
+	layout (location=2) out vec3 outPosition;
+	void main() {
+		outColor = texture(diffuse, fragTexCoord).rgb;
+		outNormal = (N*vec4(normal,1)).xyz;
+		outPosition = world_pos;
+	}
+	` + "\x00"
+
+		//shouldnt be there
+		_gbufferAggregateFragmentShader = `
+	#version 330
+	#define MAX_POINT_LIGHT 8
+	#define MIN_LUX 0.3
+
+	//GBuffer textures
+	uniform sampler2D diffusetex;
+	uniform sampler2D normaltex;
+	uniform sampler2D postex;
+	uniform sampler2D depthtex;
+
+	//cook
+	uniform float roughnessValue;
+	uniform float F0;
+	uniform float k;
+
+	//Lights
+	uniform int NUM_POINT_LIGHT;
+	uniform vec3 point_light_pos[MAX_POINT_LIGHT];
+	uniform vec3 point_light_color[MAX_POINT_LIGHT];
+
+	//Shadows
+	uniform sampler2DShadow shadowmap;
+	uniform mat4 shadowmat;
+
+	//View
+	uniform vec3 cam_pos;
+
+	in vec2 uv;
+
+	layout (location=0) out vec4 outColor;
+
+	void main(){
+		vec3 normal = normalize(texture(normaltex, uv).xyz);
+		vec3 world_position = texture(postex, uv).xyz;
+
+		vec4 shadowcoord = shadowmat*vec4(world_position, 1);
+		shadowcoord.z+=0.005;
+		float shadow = texture(shadowmap, shadowcoord.xyz,0);
+
+		//////cook torrance
+
+		//material values
+		vec3 lightColor = vec3(0.9,0.1,0.1);
+
+		vec3 world_pos = texture(postex, uv).xyz;
+		vec3 lightDir = point_light_pos[0]-world_pos;
+
+		float NdL = max(dot(normal, lightDir), 0);
+
+		float lux = shadow;
+		if(shadow > 0){
+			float specular = 0.0;
+			if(NdL > 0.0){
+				vec3 eyeDir = normalize(cam_pos-world_pos);
+
+				vec3 halfVec = normalize(lightDir+eyeDir);
+				float NdH = max(0,dot(normal,halfVec));
+				float NdV = max(0,dot(normal, eyeDir));
+				float VdH = max(0,dot(eyeDir, halfVec));
+				float mSqu = roughnessValue*roughnessValue;
+
+				float NH2 = 2.0*NdH;
+				float geoAtt = min(1.0,min((NH2*NdV)/VdH,(NH2*NdL)/VdH));
+				float roughness = (1.0 / ( 4.0 * mSqu * pow(NdH, 4.0)))*exp((NdH * NdH - 1.0) / (mSqu * NdH * NdH));
+				float fresnel = pow(1.0 - VdH, 5.0)*(1.0 - F0)+F0;
+				specular = (fresnel*geoAtt*roughness)/(NdV*NdL*3.14);
+			}
+			lux=NdL * (k + specular * (1.0 - k));
+		}
+		if(lux < MIN_LUX){
+			lux=MIN_LUX;
+		}
+		outColor = texture(diffusetex, uv)*lux;
+	}
+	` + "\x00"
+	)
+
 	gbuffer.width, gbuffer.height = width, height
 	fb := gl2.GenFramebuffer()
 	fb.Bind(gl2.FRAMEBUFFER)
@@ -254,124 +373,6 @@ func (gb *GBuffer) Aggregate(cam *Camera, plights []*PointLight, shadowmat glm.M
 
 	Fstri()
 }
-
-var _gbufferVertexShaderSource = `
-#version 330
-uniform mat4 M;
-uniform mat4 MVP;
-
-layout (location=0) in vec3 vert;
-layout (location=1) in vec2 vertTexCoord;
-layout (location=2) in vec3 vertNormal;
-
-out vec2 fragTexCoord;
-out vec3 normal;
-out vec3 world_pos;
-
-void main() {
-	normal = vertNormal;
-	fragTexCoord = vertTexCoord;
-	world_pos=(M*vec4(vert,1)).xyz;
-	gl_Position = MVP * vec4(vert, 1);
-}
-` + "\x00"
-
-var _gbufferFragmentShaderSource = `
-#version 330
-
-uniform sampler2D diffuse;
-uniform mat4 N;
-
-in vec2 fragTexCoord;
-in vec3 normal;
-in vec3 world_pos;
-layout (location=0) out vec3 outColor;
-layout (location=1) out vec3 outNormal;
-layout (location=2) out vec3 outPosition;
-void main() {
-	outColor = texture(diffuse, fragTexCoord).rgb;
-	outNormal = (N*vec4(normal,1)).xyz;
-	outPosition = world_pos;
-}
-` + "\x00"
-
-//shouldnt be there
-var _gbufferAggregateFragmentShader = `
-#version 330
-#define MAX_POINT_LIGHT 8
-#define MIN_LUX 0.3
-
-//GBuffer textures
-uniform sampler2D diffusetex;
-uniform sampler2D normaltex;
-uniform sampler2D postex;
-uniform sampler2D depthtex;
-
-//cook
-uniform float roughnessValue;
-uniform float F0;
-uniform float k;
-
-//Lights
-uniform int NUM_POINT_LIGHT;
-uniform vec3 point_light_pos[MAX_POINT_LIGHT];
-uniform vec3 point_light_color[MAX_POINT_LIGHT];
-
-//Shadows
-uniform sampler2DShadow shadowmap;
-uniform mat4 shadowmat;
-
-//View
-uniform vec3 cam_pos;
-
-in vec2 uv;
-
-layout (location=0) out vec4 outColor;
-
-void main(){
-	vec3 normal = normalize(texture(normaltex, uv).xyz);
-	vec3 world_position = texture(postex, uv).xyz;
-
-	vec4 shadowcoord = shadowmat*vec4(world_position, 1);
-	shadowcoord.z+=0.005;
-	float shadow = texture(shadowmap, shadowcoord.xyz,0);
-
-	//////cook torrance
-
-	//material values
-	vec3 lightColor = vec3(0.9,0.1,0.1);
-
-	vec3 world_pos = texture(postex, uv).xyz;
-	vec3 lightDir = point_light_pos[0]-world_pos;
-
-	float NdL = max(dot(normal, lightDir), 0);
-
-	float lux = shadow;
-	if(shadow > 0){
-		float specular = 0.0;
-		if(NdL > 0.0){
-			vec3 eyeDir = normalize(cam_pos-world_pos);
-
-			vec3 halfVec = normalize(lightDir+eyeDir);
-			float NdH = max(0,dot(normal,halfVec));
-			float NdV = max(0,dot(normal, eyeDir));
-			float VdH = max(0,dot(eyeDir, halfVec));
-			float mSqu = roughnessValue*roughnessValue;
-
-			float NH2 = 2.0*NdH;
-			float geoAtt = min(1.0,min((NH2*NdV)/VdH,(NH2*NdL)/VdH));
-			float roughness = (1.0 / ( 4.0 * mSqu * pow(NdH, 4.0)))*exp((NdH * NdH - 1.0) / (mSqu * NdH * NdH));
-			float fresnel = pow(1.0 - VdH, 5.0)*(1.0 - F0)+F0;
-			specular = (fresnel*geoAtt*roughness)/(NdV*NdL*3.14);
-		}
-		lux=NdL * (k + specular * (1.0 - k));
-	}
-	if(lux < MIN_LUX){
-		lux=MIN_LUX;
-	}
-	outColor = texture(diffusetex, uv)*lux;
-}
-` + "\x00"
 
 /*
 sobel operation
